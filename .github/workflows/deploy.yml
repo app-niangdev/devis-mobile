@@ -46,21 +46,25 @@ jobs:
       - run: flutter test
 
       - id: vars
-        run: echo "version=$(grep '^version:' pubspec.yaml | sed 's/version: *//; s/+.*//')" >> "$GITHUB_OUTPUT"
+        run: |
+          echo "version=$(grep '^version:' pubspec.yaml | sed 's/version: *//; s/+.*//')" >> "$GITHUB_OUTPUT"
 
       # Toujours la même clé : un APK signé avec une autre clé ne peut pas s'installer par-dessus
       - name: Clé de signature Android
         env:
           KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           [ -n "$KEYSTORE_BASE64" ] || { echo "Secret ANDROID_KEYSTORE_BASE64 manquant"; exit 1; }
           echo "$KEYSTORE_BASE64" | base64 -d > android/app/upload.jks
-          cat > android/key.properties <<EOF
-          storeFile=upload.jks
-          storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
-          keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
-          EOF
+          {
+            echo "storeFile=upload.jks"
+            echo "storePassword=$STORE_PASSWORD"
+            echo "keyAlias=$KEY_ALIAS"
+            echo "keyPassword=$KEY_PASSWORD"
+          } > android/key.properties
 
       - run: flutter build apk --release --dart-define=API_URL=${{ env.API_URL }}
       - run: flutter build web --release --dart-define=API_URL=${{ env.API_URL }}
