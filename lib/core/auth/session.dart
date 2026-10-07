@@ -8,8 +8,9 @@ import 'profile.dart';
 
 enum SessionStatus { loading, signedOut, signedIn }
 
-/// Étape renvoyée par les parcours de connexion :
-/// `authenticated`, `otp_required` (code WhatsApp) ou `set_password`.
+/// Étape renvoyée par les parcours de connexion et d'inscription :
+/// `authenticated`, `otp_required` (code WhatsApp), `set_password`
+/// ou `pending_approval` (inscription en attente de l'administrateur).
 class AuthStep {
   AuthStep.fromJson(Map<String, dynamic> json)
       : step = json['step'] as String? ?? '',
@@ -33,6 +34,7 @@ class AuthStep {
   bool get isAuthenticated => step == 'authenticated';
   bool get needsOtp => step == 'otp_required';
   bool get needsPassword => step == 'set_password';
+  bool get isPendingApproval => step == 'pending_approval';
 }
 
 /// Session du gestionnaire : jetons, profil et charte de son entreprise.
@@ -90,6 +92,30 @@ class Session extends ChangeNotifier {
     endedCode = null;
     final body = await api.postPublic('/auth/login', {'phone': phone, 'password': password});
     return _handleStep(body);
+  }
+
+  /// Inscription depuis l'application : un code WhatsApp confirme ensuite le numéro.
+  Future<AuthStep> register({
+    required String firstName,
+    required String lastName,
+    required String companyName,
+    String? trade,
+    required String phone,
+    required String password,
+    required String confirmation,
+  }) async {
+    endedMessage = null;
+    endedCode = null;
+    final body = await api.postPublic('/auth/register', {
+      'first_name': firstName,
+      'last_name': lastName,
+      'company_name': companyName,
+      'trade': trade,
+      'phone': phone,
+      'password': password,
+      'password_confirmation': confirmation,
+    });
+    return AuthStep.fromJson(Map<String, dynamic>.from(body['payload'] as Map));
   }
 
   Future<AuthStep> verifyOtp(String challengeToken, String code) async {

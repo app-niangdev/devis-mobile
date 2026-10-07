@@ -137,9 +137,15 @@ class _LoginScreenState extends State<LoginScreen> {
                   ? const ButtonSpinner()
                   : const Text('Se connecter'),
             ),
+            const SizedBox(height: 16),
+            OutlinedButton.icon(
+              onPressed: _loading ? null : () => context.push('/auth/register'),
+              icon: const Icon(Icons.person_add_alt_1_outlined),
+              label: const Text('Créer un compte'),
+            ),
             const SizedBox(height: 24),
             Text(
-              'Première connexion ? Utilisez le mot de passe provisoire reçu de l\'administrateur : '
+              'Compte créé par l\'administrateur ? Utilisez le mot de passe provisoire reçu : '
               'un code vous sera envoyé sur WhatsApp.',
               textAlign: TextAlign.center,
               style: TextStyle(color: AppColors.textSecondary, fontSize: 13, height: 1.4),

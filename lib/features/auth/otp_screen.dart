@@ -11,7 +11,7 @@ import '../../core/widgets/common.dart';
 import 'auth_scaffold.dart';
 import '../../core/theme/app_colors.dart';
 
-/// Saisie du code reçu sur WhatsApp (première connexion, numéro modifié, mot de passe oublié).
+/// Saisie du code reçu sur WhatsApp (inscription, première connexion, numéro modifié, mot de passe oublié).
 class OtpScreen extends StatefulWidget {
   const OtpScreen({super.key, required this.step});
 
@@ -56,6 +56,7 @@ class _OtpScreenState extends State<OtpScreen> {
   String get _title => switch (_step.purpose) {
         'first_login' => 'Activez votre compte',
         'password_reset' => 'Mot de passe oublié',
+        'signup' => 'Confirmez votre inscription',
         _ => 'Confirmez votre numéro',
       };
 
@@ -75,6 +76,9 @@ class _OtpScreenState extends State<OtpScreen> {
       }
       if (next.needsPassword) {
         context.pushReplacement('/auth/password', extra: next);
+      } else if (next.isPendingApproval) {
+        // Inscription : le compte attend l'activation par l'administrateur
+        context.go('/auth/pending');
       }
       // Numéro confirmé : connecté, le routeur ouvre l'accueil
     } on ApiException catch (e) {
