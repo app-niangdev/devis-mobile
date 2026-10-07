@@ -11,5 +11,6 @@ esac
 
 cd "$(dirname "$0")/.."
 flutter pub get
-flutter build web --release --dart-define=API_URL="$API_URL"
+VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: *//; s/+.*//')
+flutter build web --release --dart-define=API_URL="$API_URL" --dart-define=APP_VERSION="$VERSION"
 echo "PWA prête dans build/web — à copier sur le serveur (voir deploy/nginx-pwa.conf)."

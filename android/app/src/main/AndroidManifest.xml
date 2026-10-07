@@ -2,7 +2,7 @@
     <!-- Appels à l'API (release compris) -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <application
-        android:label="Devis"
+        android:label="SN Devis"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

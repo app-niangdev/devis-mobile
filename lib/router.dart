@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import 'core/auth/session.dart';
 import 'core/widgets/brand_nav_bar.dart';
-import 'core/widgets/common.dart';
+import 'core/widgets/sn_brand.dart';
 import 'features/auth/forgot_password_screen.dart';
 import 'features/auth/login_screen.dart';
 import 'features/auth/otp_screen.dart';
@@ -52,7 +52,7 @@ GoRouter buildRouter(Session session) {
       }
     },
     routes: [
-      GoRoute(path: '/splash', builder: (_, __) => const Scaffold(body: LoadingView())),
+      GoRoute(path: '/splash', builder: (_, __) => const SnSplash()),
       GoRoute(path: '/auth/login', builder: (_, __) => const LoginScreen()),
       GoRoute(path: '/auth/forgot', builder: (_, __) => const ForgotPasswordScreen()),
       GoRoute(path: '/auth/otp', builder: (_, state) => OtpScreen(step: state.extra! as AuthStep)),

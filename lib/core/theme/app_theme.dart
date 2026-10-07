@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../auth/profile.dart';
+import '../widgets/sn_brand.dart';
 
 /// Contraste WCAG entre deux couleurs (1 à 21).
 double contrastRatio(Color a, Color b) {
@@ -23,7 +24,7 @@ Color legibleOn(Color color, Color background, {double minRatio = 4.5}) {
   return hsl.toColor();
 }
 
-const _ink = Color(0xFF111827);
+const _ink = SnColors.ink;
 const _surface = Colors.white;
 
 /// Les 3 couleurs de l'entreprise et leurs variantes lisibles, accessibles via
@@ -122,7 +123,7 @@ ThemeData buildTheme(Branding branding) {
   );
 
   // Fond général très légèrement teinté par la couleur principale
-  final background = Color.alphaBlend(brand.primary.withValues(alpha: 0.035), const Color(0xFFF5F6FA));
+  final background = Color.alphaBlend(brand.primary.withValues(alpha: 0.035), SnColors.pageBg);
 
   final border = OutlineInputBorder(
     borderRadius: BorderRadius.circular(12),

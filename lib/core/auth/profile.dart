@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../widgets/sn_brand.dart';
+
 Color parseHexColor(String? hex, Color fallback) {
   if (hex == null || !RegExp(r'^#[0-9A-Fa-f]{6}$').hasMatch(hex)) {
     return fallback;
@@ -55,12 +57,16 @@ class Branding {
   @override
   int get hashCode => Object.hash(name, slogan, logoUrl, primary, secondary, accent);
 
+  /// Charte SN Devis : avant la première connexion, et pour une entreprise qui n'a pas choisi ses couleurs.
   static const defaults = Branding(
-    name: 'Devis',
-    primary: Color(0xFF1D4ED8),
-    secondary: Color(0xFF0F172A),
-    accent: Color(0xFFF59E0B),
+    name: 'SN Devis',
+    primary: SnColors.green,
+    secondary: SnColors.ink,
+    accent: SnColors.yellow,
   );
+
+  /// Aucune entreprise connue : on affiche l'identité SN Devis.
+  bool get isPlatform => this == defaults;
 
   final String name;
   final String? slogan;

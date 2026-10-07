@@ -49,7 +49,7 @@ class DevisApp extends StatelessWidget {
     final branding = context.select<Session, Branding>((s) => s.branding);
 
     return MaterialApp.router(
-      title: 'Devis',
+      title: 'SN Devis',
       // Web/PWA : couleur de la barre d'état du téléphone, assortie à l'en-tête
       color: branding.secondary,
       debugShowCheckedModeBanner: false,

@@ -67,7 +67,8 @@ jobs:
           } > android/key.properties
 
       - run: flutter build apk --release --dart-define=API_URL=${{ env.API_URL }}
-      - run: flutter build web --release --dart-define=API_URL=${{ env.API_URL }}
+      # APP_VERSION : la PWA compare sa version à celle du serveur pour se recharger
+      - run: flutter build web --release --dart-define=API_URL=${{ env.API_URL }} --dart-define=APP_VERSION=${{ steps.vars.outputs.version }}
 
       # L'APK est servi avec la PWA : https://app-devis.niangdev.com/devis.apk
       - run: cp build/app/outputs/flutter-apk/app-release.apk build/web/devis.apk

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../core/auth/profile.dart';
 import '../../core/auth/session.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/sn_brand.dart';
 
 /// Mise en page commune des écrans de connexion.
 class AuthScaffold extends StatelessWidget {
@@ -33,45 +34,10 @@ class AuthScaffold extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 64,
-                        height: 64,
-                        clipBehavior: Clip.antiAlias,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [brand.primary, Color.lerp(brand.primary, brand.secondary, 0.45)!],
-                          ),
-                          borderRadius: BorderRadius.circular(18),
-                          boxShadow: [BoxShadow(color: brand.primary.withValues(alpha: 0.28), blurRadius: 16, offset: const Offset(0, 6))],
-                        ),
-                        child: branding.logoUrl != null
-                            ? Container(
-                                color: Colors.white,
-                                child: Image.network(branding.logoUrl!, fit: BoxFit.cover, width: 64, height: 64,
-                                    // Balise <img> sur le web : évite le blocage CORS de /storage
-                                    webHtmlElementStrategy: WebHtmlElementStrategy.prefer,
-                                    errorBuilder: (_, __, ___) => Icon(Icons.request_quote_rounded, color: brand.primaryInk, size: 34)),
-                              )
-                            : Icon(Icons.request_quote_rounded, color: brand.onPrimary, size: 34),
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(branding.name, style: TextStyle(color: brand.secondaryInk, fontSize: 18, fontWeight: FontWeight.w800)),
-                            if (branding.slogan != null)
-                              Text(branding.slogan!, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+                  if (branding.isPlatform)
+                    const Align(alignment: Alignment.centerLeft, child: SnLogo(height: 52))
+                  else
+                    _CompanyHeader(branding: branding),
                   const SizedBox(height: 14),
                   // Filet aux 3 couleurs de l'entreprise
                   Row(
@@ -89,12 +55,61 @@ class AuthScaffold extends StatelessWidget {
                   Text(subtitle, style: TextStyle(color: Colors.grey.shade700, height: 1.4)),
                   const SizedBox(height: 28),
                   child,
+                  // L'écran porte les couleurs de l'entreprise : on rappelle la plateforme
+                  if (!branding.isPlatform) ...[
+                    const SizedBox(height: 36),
+                    const PoweredBySn(),
+                  ],
                 ],
               ),
             ),
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Logo, nom et slogan de l'entreprise (dernière charte connue sur ce téléphone).
+class _CompanyHeader extends StatelessWidget {
+  const _CompanyHeader({required this.branding});
+
+  final Branding branding;
+
+  @override
+  Widget build(BuildContext context) {
+    final brand = context.brand;
+    return Row(
+      children: [
+        Container(
+          width: 64,
+          height: 64,
+          clipBehavior: Clip.antiAlias,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: Colors.grey.shade200),
+            boxShadow: [BoxShadow(color: brand.primary.withValues(alpha: 0.18), blurRadius: 16, offset: const Offset(0, 6))],
+          ),
+          child: branding.logoUrl != null
+              ? Image.network(branding.logoUrl!, fit: BoxFit.cover, width: 64, height: 64,
+                  // Balise <img> sur le web : évite le blocage CORS de /storage
+                  webHtmlElementStrategy: WebHtmlElementStrategy.prefer,
+                  errorBuilder: (_, __, ___) => const Padding(padding: EdgeInsets.all(8), child: SnSymbol()))
+              : const Padding(padding: EdgeInsets.all(8), child: SnSymbol()),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(branding.name, style: TextStyle(color: brand.secondaryInk, fontSize: 18, fontWeight: FontWeight.w800)),
+              if (branding.slogan != null)
+                Text(branding.slogan!, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

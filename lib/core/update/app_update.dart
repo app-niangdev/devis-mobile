@@ -4,6 +4,20 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../api/api_client.dart';
+import 'web_reload_stub.dart' if (dart.library.js_interop) 'web_reload_web.dart';
+
+/// Version de la PWA, fixée à la compilation (`--dart-define=APP_VERSION=1.2.0`).
+/// Sur le web, package_info_plus lit version.json sur le serveur, donc la version déployée
+/// et non celle qui tourne dans le navigateur : il faut la graver dans le code.
+const _webVersion = String.fromEnvironment('APP_VERSION');
+
+/// Version qui tourne sur l'appareil ; null si inconnue (PWA compilée sans APP_VERSION).
+Future<String?> installedVersion() async {
+  if (kIsWeb) {
+    return _webVersion.isEmpty ? null : _webVersion;
+  }
+  return (await PackageInfo.fromPlatform()).version;
+}
 
 /// Versions publiées par le serveur (`GET /app-version`).
 class AppRelease {
@@ -32,10 +46,10 @@ int compareVersions(String a, String b) {
   return 0;
 }
 
-/// L'APK Android ne se met pas à jour tout seul (pas de Play Store) : au démarrage et au retour
-/// dans l'app, on compare la version installée à celle du serveur.
+/// Au démarrage et au retour dans l'app, on compare la version qui tourne à celle du serveur.
 /// Plus récente disponible → proposition ; sous la version minimale → écran bloquant.
-/// La PWA, elle, se met à jour d'elle-même : aucune vérification sur le web.
+/// Android (APK hors Play Store) : téléchargement du nouvel APK.
+/// PWA (iPhone…) : le service worker garde l'ancienne version en cache, on la recharge.
 class UpdateGate extends StatefulWidget {
   const UpdateGate({super.key, required this.api, required this.navigatorKey, required this.child});
 
@@ -55,7 +69,7 @@ class _UpdateGateState extends State<UpdateGate> {
   AppRelease? _forced;
   String? _proposed;
 
-  bool get _supported => !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+  bool get _supported => kIsWeb ? _webVersion.isNotEmpty : defaultTargetPlatform == TargetPlatform.android;
 
   @override
   void initState() {
@@ -79,14 +93,14 @@ class _UpdateGateState extends State<UpdateGate> {
     _checkedAt = now;
 
     final AppRelease release;
-    final String current;
+    final String? current;
     try {
       release = AppRelease.fromJson(Map<String, dynamic>.from((await widget.api.get('/app-version'))['payload'] as Map));
-      current = (await PackageInfo.fromPlatform()).version;
+      current = await installedVersion();
     } catch (_) {
       return; // Hors ligne ou serveur indisponible : l'app reste utilisable
     }
-    if (!mounted) {
+    if (!mounted || current == null) {
       return;
     }
 
@@ -109,7 +123,10 @@ class _UpdateGateState extends State<UpdateGate> {
   }
 }
 
-Future<void> _download(BuildContext context, AppRelease release) async {
+Future<void> _update(BuildContext context, AppRelease release) async {
+  if (kIsWeb) {
+    return reloadLatest();
+  }
   final ok = release.url.isNotEmpty && await launchUrl(Uri.parse(release.url), mode: LaunchMode.externalApplication);
   if (!ok && context.mounted) {
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -119,7 +136,9 @@ Future<void> _download(BuildContext context, AppRelease release) async {
   }
 }
 
-const _installHint = 'Ouvrez ensuite le fichier téléchargé pour installer la mise à jour. Vos données sont conservées.';
+const _installHint = kIsWeb
+    ? 'L\'application va se recharger. Vos données sont conservées.'
+    : 'Ouvrez ensuite le fichier téléchargé pour installer la mise à jour. Vos données sont conservées.';
 
 class _UpdateDialog extends StatelessWidget {
   const _UpdateDialog({required this.release});
@@ -141,7 +160,7 @@ class _UpdateDialog extends StatelessWidget {
         FilledButton(
           style: FilledButton.styleFrom(minimumSize: const Size(0, 44)),
           onPressed: () async {
-            await _download(context, release);
+            await _update(context, release);
             if (context.mounted) {
               Navigator.pop(context);
             }
@@ -187,9 +206,9 @@ class _ForcedUpdateScreen extends StatelessWidget {
                 const SizedBox(height: 24),
                 FilledButton.icon(
                   style: FilledButton.styleFrom(minimumSize: const Size(0, 48)),
-                  onPressed: () => _download(context, release),
+                  onPressed: () => _update(context, release),
                   icon: const Icon(Icons.download_rounded),
-                  label: const Text('Télécharger la mise à jour'),
+                  label: const Text(kIsWeb ? 'Mettre à jour' : 'Télécharger la mise à jour'),
                 ),
               ],
             ),
@@ -206,10 +225,10 @@ class AppVersionLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<PackageInfo>(
-      future: PackageInfo.fromPlatform(),
+    return FutureBuilder<String?>(
+      future: installedVersion(),
       builder: (context, snapshot) => Text(
-        snapshot.hasData ? 'Version ${snapshot.data!.version}' : '',
+        snapshot.hasData ? 'SN Devis · Version ${snapshot.data}' : '',
         textAlign: TextAlign.center,
         style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
       ),
