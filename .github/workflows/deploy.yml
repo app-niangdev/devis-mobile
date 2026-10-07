@@ -89,16 +89,17 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          script_stop: true
           script: |
             set -e
             cd /opt/devis
+            # Réécrit le contenu du .env sur place : il suffit que deploy puisse écrire dans le fichier
+            # (sed -i créerait un fichier temporaire dans backend/, qui appartient à root)
             set_env() {
-              if grep -q "^$1=" backend/.env; then
-                sed -i "s|^$1=.*|$1=$2|" backend/.env
-              else
-                echo "$1=$2" >> backend/.env
-              fi
+              tmp=$(mktemp)
+              grep -v "^$1=" backend/.env > "$tmp" || true
+              echo "$1=$2" >> "$tmp"
+              cat "$tmp" > backend/.env
+              rm -f "$tmp"
             }
             set_env MOBILE_LATEST_VERSION "${{ steps.vars.outputs.version }}"
             if [ "${{ inputs.force }}" = "true" ]; then
