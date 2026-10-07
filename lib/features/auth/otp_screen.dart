@@ -8,8 +8,8 @@ import 'package:provider/provider.dart';
 import '../../core/api/api_exception.dart';
 import '../../core/auth/session.dart';
 import '../../core/widgets/common.dart';
-import '../../core/theme/app_theme.dart';
 import 'auth_scaffold.dart';
+import '../../core/theme/app_colors.dart';
 
 /// Saisie du code reçu sur WhatsApp (première connexion, numéro modifié, mot de passe oublié).
 class OtpScreen extends StatefulWidget {
@@ -152,10 +152,10 @@ class _OtpScreenState extends State<OtpScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.chat_rounded, size: 18, color: context.brand.primaryInk),
+              Icon(Icons.chat_rounded, size: 18, color: AppColors.accent),
               const SizedBox(width: 6),
               _resendIn > 0
-                  ? Text('Renvoyer le code dans $_resendIn s', style: TextStyle(color: Colors.grey.shade600))
+                  ? Text('Renvoyer le code dans $_resendIn s', style: TextStyle(color: AppColors.textSecondary))
                   : TextButton(onPressed: _resend, child: const Text('Renvoyer le code')),
             ],
           ),

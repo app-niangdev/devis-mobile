@@ -6,8 +6,8 @@ import 'package:provider/provider.dart';
 import 'core/api/api_client.dart';
 import 'core/api/data_changes.dart';
 import 'core/api/token_store.dart';
-import 'core/auth/profile.dart';
 import 'core/auth/session.dart';
+import 'core/theme/app_colors.dart';
 import 'core/theme/app_theme.dart';
 import 'core/update/app_update.dart';
 import 'features/company/company.dart';
@@ -45,15 +45,14 @@ class DevisApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Le thème suit la charte de l'entreprise (dernière connue), sinon les couleurs par défaut
-    final branding = context.select<Session, Branding>((s) => s.branding);
-
     return MaterialApp.router(
       title: 'SN Devis',
-      // Web/PWA : couleur de la barre d'état du téléphone, assortie à l'en-tête
-      color: branding.secondary,
+      // Web/PWA : couleur de la barre d'état du téléphone, assortie à l'en-tête blanc
+      color: AppColors.cardBg,
       debugShowCheckedModeBanner: false,
-      theme: buildTheme(branding),
+      // Interface toujours aux couleurs SN Devis, en mode clair
+      theme: appTheme,
+      themeMode: ThemeMode.light,
       routerConfig: router,
       builder: (context, child) => UpdateGate(api: api, navigatorKey: router.routerDelegate.navigatorKey, child: child!),
       locale: const Locale('fr'),

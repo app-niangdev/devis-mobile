@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/utils/format.dart';
 import 'quote.dart';
+import '../../core/theme/app_colors.dart';
 
 class LineResult {
   LineResult.saved(this.line) : deleted = false;
@@ -50,12 +51,26 @@ class _LineSheetState extends State<_LineSheet> {
 
   List<CatalogProduct> _suggestions = [];
   Timer? _debounce;
+  late List<String> _units = context.read<QuotesRepository>().lastUnits;
 
   @override
   void initState() {
     super.initState();
     _quantity.addListener(() => setState(() {}));
     _price.addListener(() => setState(() {}));
+    _loadUnits();
+  }
+
+  /// Met à jour les unités suggérées selon les habitudes de l'entreprise.
+  Future<void> _loadUnits() async {
+    try {
+      final units = await context.read<QuotesRepository>().units();
+      if (mounted) {
+        setState(() => _units = units);
+      }
+    } catch (_) {
+      // Les suggestions sont facultatives : on garde les dernières connues
+    }
   }
 
   @override
@@ -201,7 +216,7 @@ class _LineSheetState extends State<_LineSheet> {
                 Wrap(
                   spacing: 6,
                   children: [
-                    for (final unit in commonUnits)
+                    for (final unit in _units)
                       ActionChip(label: Text(unit), visualDensity: VisualDensity.compact, onPressed: () => setState(() => _unit.text = unit)),
                   ],
                 ),
@@ -232,7 +247,7 @@ class _LineSheetState extends State<_LineSheet> {
                   if (!widget.isNew) ...[
                     Expanded(
                       child: OutlinedButton(
-                        style: OutlinedButton.styleFrom(foregroundColor: Colors.red.shade700),
+                        style: OutlinedButton.styleFrom(foregroundColor: AppColors.danger),
                         onPressed: () => Navigator.pop(context, LineResult.deleted()),
                         child: const Text('Supprimer'),
                       ),

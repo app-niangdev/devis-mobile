@@ -52,7 +52,7 @@ class Session extends ChangeNotifier {
   /// Dernière charte connue sur ce téléphone, utilisée tant que le profil n'est pas chargé.
   Branding? _lastBranding;
 
-  /// Charte appliquée à l'application : celle de l'entreprise, sinon les couleurs par défaut.
+  /// Charte de l'entreprise (logo, nom, couleurs de ses devis), sinon celle de SN Devis.
   Branding get branding => profile?.branding ?? _lastBranding ?? Branding.defaults;
 
   /// Motif de la dernière déconnexion forcée (abonnement expiré…), affiché à l'écran de connexion.

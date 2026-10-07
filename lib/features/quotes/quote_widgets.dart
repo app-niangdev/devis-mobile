@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../core/utils/format.dart';
 import 'quote.dart';
+import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_radius.dart';
 
 class StatusChip extends StatelessWidget {
   const StatusChip(this.status, {super.key});
@@ -13,7 +15,7 @@ class StatusChip extends StatelessWidget {
     final color = quoteStatusColor(status);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(20)),
+      decoration: BoxDecoration(color: color.withValues(alpha: 0.12), borderRadius: AppRadius.pillAll),
       child: Text(
         quoteStatusLabels[status] ?? status,
         style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 12),
@@ -32,7 +34,7 @@ class QuoteTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: InkWell(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: AppRadius.lgAll,
         onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.all(14),
@@ -49,12 +51,12 @@ class QuoteTile extends StatelessWidget {
               ),
               if (quote.title != null) ...[
                 const SizedBox(height: 4),
-                Text(quote.title!, style: TextStyle(color: Colors.grey.shade700), overflow: TextOverflow.ellipsis),
+                Text(quote.title!, style: const TextStyle(color: AppColors.textSecondary), overflow: TextOverflow.ellipsis),
               ],
               const SizedBox(height: 10),
               Row(
                 children: [
-                  Text('${quote.number} · ${formatDate(quote.createdAt)}', style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+                  Text('${quote.number} · ${formatDate(quote.createdAt)}', style: const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
                   const Spacer(),
                   Text(formatMoney(quote.total), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
                 ],
@@ -80,9 +82,9 @@ class DepositBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (label, color) = switch (status) {
-      'received' => ('Acompte reçu', const Color(0xFF16A34A)),
-      'partial' => ('Acompte partiel', const Color(0xFFD97706)),
-      _ => ('Acompte attendu', const Color(0xFF64748B)),
+      'received' => ('Acompte reçu', AppColors.success),
+      'partial' => ('Acompte partiel', AppColors.warning),
+      _ => ('Acompte attendu', AppColors.textSecondary),
     };
     return Row(
       children: [

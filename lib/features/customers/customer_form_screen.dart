@@ -6,6 +6,7 @@ import '../../core/api/api_exception.dart';
 import '../../core/utils/phone.dart';
 import '../../core/widgets/common.dart';
 import 'customer.dart';
+import '../../core/theme/app_colors.dart';
 
 class CustomerFormScreen extends StatefulWidget {
   const CustomerFormScreen({super.key, this.customer});
@@ -81,7 +82,7 @@ class _CustomerFormScreenState extends State<CustomerFormScreen> {
           padding: const EdgeInsets.all(16),
           children: [
             if (_error != null && _error!.errors == null)
-              Padding(padding: const EdgeInsets.only(bottom: 12), child: Text(_error!.message, style: TextStyle(color: Colors.red.shade700))),
+              Padding(padding: const EdgeInsets.only(bottom: 12), child: Text(_error!.message, style: TextStyle(color: AppColors.danger))),
             TextFormField(
               controller: _name,
               textCapitalization: TextCapitalization.words,

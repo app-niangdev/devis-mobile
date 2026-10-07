@@ -8,6 +8,7 @@ import '../../core/widgets/common.dart';
 import '../../core/utils/phone.dart';
 import '../subscription/subscription_offers.dart';
 import 'auth_scaffold.dart';
+import '../../core/theme/app_colors.dart';
 
 /// Connexion du gestionnaire : téléphone + mot de passe.
 /// À la première connexion, un code WhatsApp est demandé avant de choisir son mot de passe.
@@ -141,7 +142,7 @@ class _LoginScreenState extends State<LoginScreen> {
               'Première connexion ? Utilisez le mot de passe provisoire reçu de l\'administrateur : '
               'un code vous sera envoyé sur WhatsApp.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey.shade600, fontSize: 13, height: 1.4),
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 13, height: 1.4),
             ),
           ],
         ),

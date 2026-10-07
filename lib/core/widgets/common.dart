@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 
 import '../api/api_exception.dart';
+import '../theme/app_colors.dart';
 
 void showMessage(BuildContext context, String message, {bool error = false}) {
   ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()
     ..showSnackBar(SnackBar(
       content: Text(message),
-      backgroundColor: error ? Colors.red.shade700 : null,
+      backgroundColor: error ? AppColors.danger : null,
       behavior: SnackBarBehavior.floating,
     ));
 }
@@ -31,7 +32,7 @@ Future<bool> confirmAction(
       actions: [
         TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Annuler')),
         FilledButton(
-          style: danger ? FilledButton.styleFrom(backgroundColor: Colors.red.shade700, minimumSize: const Size(0, 44)) : FilledButton.styleFrom(minimumSize: const Size(0, 44)),
+          style: danger ? FilledButton.styleFrom(backgroundColor: AppColors.danger, minimumSize: const Size(0, 44)) : FilledButton.styleFrom(minimumSize: const Size(0, 44)),
           onPressed: () => Navigator.pop(context, true),
           child: Text(confirmLabel),
         ),
@@ -63,7 +64,7 @@ class ErrorView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.cloud_off_rounded, size: 48, color: Colors.grey.shade500),
+            const Icon(Icons.cloud_off_rounded, size: 48, color: AppColors.textMuted),
             const SizedBox(height: 12),
             Text(message, textAlign: TextAlign.center),
             const SizedBox(height: 16),
@@ -95,9 +96,9 @@ class EmptyView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 56, color: Colors.grey.shade400),
+            Icon(icon, size: 56, color: AppColors.textMuted),
             const SizedBox(height: 12),
-            Text(message, textAlign: TextAlign.center, style: TextStyle(color: Colors.grey.shade700)),
+            Text(message, textAlign: TextAlign.center, style: const TextStyle(color: AppColors.textSecondary)),
             if (action != null) ...[const SizedBox(height: 16), action!],
           ],
         ),
@@ -129,7 +130,7 @@ class SectionCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       title!.toUpperCase(),
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: .6, color: Colors.grey.shade600),
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: .6, color: AppColors.textSecondary),
                     ),
                   ),
                   if (trailing != null) trailing!,
@@ -161,7 +162,7 @@ class InfoRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
-          Expanded(child: Text(label, style: TextStyle(color: color ?? Colors.grey.shade700, fontWeight: bold ? FontWeight.w700 : null))),
+          Expanded(child: Text(label, style: TextStyle(color: color ?? AppColors.textSecondary, fontWeight: bold ? FontWeight.w700 : null))),
           Text(value, style: style),
         ],
       ),

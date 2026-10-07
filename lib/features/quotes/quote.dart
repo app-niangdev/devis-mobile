@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/api/api_client.dart';
 import '../customers/customer.dart';
+import '../../core/theme/app_colors.dart';
 
 const quoteStatusLabels = {
   'draft': 'Brouillon',
@@ -20,14 +21,38 @@ const paymentMethodLabels = {
   'cash': 'Espèces',
 };
 
-const commonUnits = ['u', 'm²', 'ml', 'm³', 'kg', 'sac', 'forfait', 'jour', 'heure'];
+/// Unités proposées pour une fourniture tant que l'entreprise n'a pas ses habitudes.
+const defaultUnits = ['mètre', 'litre', 'sac', 'paquet', 'boîte', 'kg', 'gramme', 'm²', 'm³', 'bouteille', 'caisse', 'paire'];
+
+/// Nombre d'utilisations à partir duquel une unité devient une habitude, placée en tête.
+const _unitHabitThreshold = 2;
+
+/// Unités suggérées : les habitudes de l'entreprise (les plus utilisées d'abord),
+/// complétées par les unités par défaut, sans doublon ni différence de casse.
+List<String> suggestedUnits(List<(String, int)> used, {int max = 12}) {
+  final result = <String>[];
+  final seen = <String>{};
+  void add(String unit) {
+    if (result.length < max && seen.add(unit.toLowerCase())) {
+      result.add(unit);
+    }
+  }
+
+  for (final (unit, uses) in used) {
+    if (uses >= _unitHabitThreshold) {
+      add(unit);
+    }
+  }
+  defaultUnits.forEach(add);
+  return result;
+}
 
 Color quoteStatusColor(String status) => switch (status) {
-      'sent' => const Color(0xFF2563EB),
-      'accepted' => const Color(0xFF16A34A),
-      'refused' => const Color(0xFFDC2626),
-      'expired' => const Color(0xFFD97706),
-      _ => const Color(0xFF64748B),
+      'sent' => AppColors.info,
+      'accepted' => AppColors.success,
+      'refused' => AppColors.danger,
+      'expired' => AppColors.warning,
+      _ => AppColors.textSecondary,
     };
 
 /// Désignation des lignes de main-d'œuvre (le gestionnaire ne saisit que le montant).
@@ -169,6 +194,19 @@ class QuotesRepository {
   QuotesRepository(this.api);
 
   final ApiClient api;
+
+  /// Dernières unités suggérées, affichées sans attendre le réseau à l'ouverture de la saisie.
+  List<String> lastUnits = defaultUnits;
+
+  /// Unités suggérées pour une fourniture (habitudes de l'entreprise, puis unités par défaut).
+  Future<List<String>> units() async {
+    final body = await api.get('/manager/quotes/units');
+    final used = [
+      for (final u in body['payload'] as List)
+        ((u as Map)['unit'] as String, (u['uses'] as num).toInt()),
+    ];
+    return lastUnits = suggestedUnits(used);
+  }
 
   Future<(Paged<QuoteSummary>, QuotesSummary)> list({String? status, String? search, int? customerId, int page = 1}) async {
     final body = await api.get('/manager/quotes', query: {

@@ -7,7 +7,8 @@ import '../../core/api/api_exception.dart';
 import '../../core/utils/format.dart';
 import '../../core/utils/phone.dart';
 import '../../core/widgets/common.dart';
-import '../../core/theme/app_theme.dart';
+import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_radius.dart';
 import '../company/company.dart';
 import '../customers/customer.dart';
 import 'line_sheet.dart';
@@ -275,13 +276,13 @@ class _QuoteEditorScreenState extends State<QuoteEditorScreen> {
                   ],
                 )
               : InkWell(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: AppRadius.mdAll,
                   onTap: _pickCustomer,
                   child: InputDecorator(
                     decoration: const InputDecoration(suffixIcon: Icon(Icons.person_search_outlined)),
                     child: Text(
                       _customerLabel.isEmpty ? 'Choisir un client' : _customerLabel,
-                      style: TextStyle(color: _customerLabel.isEmpty ? Colors.grey.shade600 : null, fontWeight: FontWeight.w600),
+                      style: TextStyle(color: _customerLabel.isEmpty ? AppColors.textSecondary : null, fontWeight: FontWeight.w600),
                     ),
                   ),
                 ),
@@ -305,7 +306,7 @@ class _QuoteEditorScreenState extends State<QuoteEditorScreen> {
               if (_lines.isEmpty)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 8),
-                  child: Text('Ajoutez les fournitures et la main-d\'œuvre.', style: TextStyle(color: Colors.grey.shade600)),
+                  child: const Text('Ajoutez les fournitures et la main-d\'œuvre.', style: TextStyle(color: AppColors.textSecondary)),
                 ),
               for (var i = 0; i < _lines.length; i++)
                 ListTile(
@@ -317,7 +318,7 @@ class _QuoteEditorScreenState extends State<QuoteEditorScreen> {
                     child: Icon(
                       _lines[i].isLabor ? Icons.handyman_outlined : Icons.inventory_2_outlined,
                       size: 18,
-                      color: _lines[i].isLabor ? context.brand.accentInk : context.brand.primaryInk,
+                      color: _lines[i].isLabor ? AppColors.highlightText : AppColors.accent,
                     ),
                   ),
                   title: Text(_lines[i].designation, style: const TextStyle(fontWeight: FontWeight.w600)),
@@ -402,7 +403,7 @@ class _QuoteEditorScreenState extends State<QuoteEditorScreen> {
     return SafeArea(
       child: Container(
         padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
-        decoration: BoxDecoration(color: Colors.white, border: Border(top: BorderSide(color: Colors.grey.shade200))),
+        decoration: const BoxDecoration(color: AppColors.cardBg, border: Border(top: BorderSide(color: AppColors.border))),
         child: Row(
           children: [
             Expanded(
@@ -410,13 +411,13 @@ class _QuoteEditorScreenState extends State<QuoteEditorScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Total', style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+                  const Text('Total', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
                   FittedBox(
                     fit: BoxFit.scaleDown,
                     child: Text(formatMoney(_total), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
                   ),
                   if (_depositAmount > 0)
-                    Text('Acompte ${formatMoney(_depositAmount)}', style: TextStyle(color: Colors.grey.shade700, fontSize: 12)),
+                    Text('Acompte ${formatMoney(_depositAmount)}', style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
                 ],
               ),
             ),

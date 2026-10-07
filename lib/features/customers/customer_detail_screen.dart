@@ -7,6 +7,7 @@ import '../../core/utils/format.dart';
 import '../../core/widgets/common.dart';
 import '../quotes/quote_widgets.dart';
 import 'customer.dart';
+import '../../core/theme/app_colors.dart';
 
 class CustomerDetailScreen extends StatefulWidget {
   const CustomerDetailScreen({super.key, required this.id});
@@ -96,7 +97,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> with Reload
                               if (customer.email != null) InfoRow('E-mail', customer.email!),
                               if (customer.notes != null) ...[
                                 const SizedBox(height: 8),
-                                Align(alignment: Alignment.centerLeft, child: Text(customer.notes!, style: TextStyle(color: Colors.grey.shade700))),
+                                Align(alignment: Alignment.centerLeft, child: Text(customer.notes!, style: TextStyle(color: AppColors.textSecondary))),
                               ],
                             ],
                           ),
@@ -113,7 +114,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> with Reload
                         Text('Devis', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
                         const SizedBox(height: 8),
                         if (customer.quotes.isEmpty)
-                          Text('Aucun devis pour ce client.', style: TextStyle(color: Colors.grey.shade600)),
+                          Text('Aucun devis pour ce client.', style: TextStyle(color: AppColors.textSecondary)),
                         for (final q in customer.quotes)
                           Padding(
                             padding: const EdgeInsets.only(bottom: 8),
@@ -156,7 +157,7 @@ class _Stat extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: TextStyle(color: Colors.grey.shade700, fontSize: 12.5)),
+            Text(label, style: TextStyle(color: AppColors.textSecondary, fontSize: 12.5)),
             const SizedBox(height: 4),
             FittedBox(fit: BoxFit.scaleDown, child: Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800))),
           ],

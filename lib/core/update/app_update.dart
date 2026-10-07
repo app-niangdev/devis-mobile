@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../api/api_client.dart';
 import 'web_reload_stub.dart' if (dart.library.js_interop) 'web_reload_web.dart';
+import '../theme/app_colors.dart';
 
 /// Version de la PWA, fixée à la compilation (`--dart-define=APP_VERSION=1.2.0`).
 /// Sur le web, package_info_plus lit version.json sur le serveur, donc la version déployée
@@ -202,7 +203,7 @@ class _ForcedUpdateScreen extends StatelessWidget {
                   Text(notes, textAlign: TextAlign.center),
                 ],
                 const SizedBox(height: 12),
-                Text(_installHint, textAlign: TextAlign.center, style: TextStyle(color: Colors.grey.shade600)),
+                Text(_installHint, textAlign: TextAlign.center, style: TextStyle(color: AppColors.textSecondary)),
                 const SizedBox(height: 24),
                 FilledButton.icon(
                   style: FilledButton.styleFrom(minimumSize: const Size(0, 48)),
@@ -230,7 +231,7 @@ class AppVersionLabel extends StatelessWidget {
       builder: (context, snapshot) => Text(
         snapshot.hasData ? 'SN Devis · Version ${snapshot.data}' : '',
         textAlign: TextAlign.center,
-        style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+        style: TextStyle(fontSize: 12, color: AppColors.textMuted),
       ),
     );
   }

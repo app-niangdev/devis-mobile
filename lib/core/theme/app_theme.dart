@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-import '../auth/profile.dart';
-import '../widgets/sn_brand.dart';
+import 'app_colors.dart';
+import 'app_radius.dart';
+
+/// Polices embarquées (assets/fonts) : aucun téléchargement au lancement.
+abstract final class AppFonts {
+  static const heading = 'Poppins';
+  static const body = 'Inter';
+}
 
 /// Contraste WCAG entre deux couleurs (1 à 21).
 double contrastRatio(Color a, Color b) {
@@ -10,245 +17,238 @@ double contrastRatio(Color a, Color b) {
   return (la > lb ? la + 0.05 : lb + 0.05) / (la > lb ? lb + 0.05 : la + 0.05);
 }
 
-/// Texte lisible (blanc ou presque noir) posé sur [background].
+/// Texte lisible (blanc ou anthracite) posé sur [background] : sert aux couleurs
+/// choisies par l'entreprise, dont on ne connaît pas la luminosité à l'avance.
 Color readableOn(Color background) =>
-    contrastRatio(Colors.white, background) >= contrastRatio(_ink, background) ? Colors.white : _ink;
+    contrastRatio(AppColors.textInverse, background) >= contrastRatio(AppColors.textPrimary, background)
+        ? AppColors.textInverse
+        : AppColors.textPrimary;
 
-/// Assombrit [color] jusqu'à atteindre [minRatio] sur [background] :
-/// une couleur claire (jaune, cyan…) reste utilisable pour du texte ou des icônes.
-Color legibleOn(Color color, Color background, {double minRatio = 4.5}) {
-  var hsl = HSLColor.fromColor(color);
-  while (contrastRatio(hsl.toColor(), background) < minRatio && hsl.lightness > 0.05) {
-    hsl = hsl.withLightness((hsl.lightness - 0.04).clamp(0.0, 1.0));
-  }
-  return hsl.toColor();
-}
+/// Barre d'état à icônes sombres, pour les écrans à fond clair.
+const darkStatusBar = SystemUiOverlayStyle(
+  statusBarColor: Colors.transparent,
+  statusBarIconBrightness: Brightness.dark,
+  statusBarBrightness: Brightness.light,
+);
 
-const _ink = SnColors.ink;
-const _surface = Colors.white;
+/// Thème de l'application, toujours aux couleurs SN Devis.
+/// Les couleurs de chaque entreprise ne s'appliquent qu'à ses devis (PDF, aperçu).
+final ThemeData appTheme = _buildTheme();
 
-/// Les 3 couleurs de l'entreprise et leurs variantes lisibles, accessibles via
-/// `Theme.of(context).extension<BrandColors>()!` ou `context.brand`.
-@immutable
-class BrandColors extends ThemeExtension<BrandColors> {
-  const BrandColors({
-    required this.primary,
-    required this.onPrimary,
-    required this.primaryInk,
-    required this.secondary,
-    required this.onSecondary,
-    required this.secondaryInk,
-    required this.accent,
-    required this.onAccent,
-    required this.accentInk,
-  });
-
-  factory BrandColors.from(Branding b) => BrandColors(
-        primary: b.primary,
-        onPrimary: readableOn(b.primary),
-        primaryInk: legibleOn(b.primary, _surface),
-        secondary: b.secondary,
-        onSecondary: readableOn(b.secondary),
-        secondaryInk: legibleOn(b.secondary, _surface),
-        accent: b.accent,
-        onAccent: readableOn(b.accent),
-        accentInk: legibleOn(b.accent, _surface),
-      );
-
-  /// Fond des boutons et éléments actifs.
-  final Color primary;
-  final Color onPrimary;
-
-  /// Variante de [primary] pour du texte ou des icônes sur fond blanc.
-  final Color primaryInk;
-
-  /// En-têtes et blocs de structure.
-  final Color secondary;
-  final Color onSecondary;
-  final Color secondaryInk;
-
-  /// Mise en avant : action principale, badges.
-  final Color accent;
-  final Color onAccent;
-  final Color accentInk;
-
-  @override
-  BrandColors copyWith() => this;
-
-  @override
-  BrandColors lerp(BrandColors? other, double t) {
-    if (other == null) {
-      return this;
-    }
-    Color mix(Color a, Color b) => Color.lerp(a, b, t)!;
-    return BrandColors(
-      primary: mix(primary, other.primary),
-      onPrimary: mix(onPrimary, other.onPrimary),
-      primaryInk: mix(primaryInk, other.primaryInk),
-      secondary: mix(secondary, other.secondary),
-      onSecondary: mix(onSecondary, other.onSecondary),
-      secondaryInk: mix(secondaryInk, other.secondaryInk),
-      accent: mix(accent, other.accent),
-      onAccent: mix(onAccent, other.onAccent),
-      accentInk: mix(accentInk, other.accentInk),
-    );
-  }
-}
-
-extension BrandContext on BuildContext {
-  BrandColors get brand => Theme.of(this).extension<BrandColors>()!;
-}
-
-/// Thème construit à partir des 3 couleurs de l'entreprise :
-/// principale = actions, secondaire = structure (en-têtes), accent = mise en avant.
-ThemeData buildTheme(Branding branding) {
-  final brand = BrandColors.from(branding);
-
-  final scheme = ColorScheme.fromSeed(seedColor: branding.primary).copyWith(
-    primary: brand.primary,
-    onPrimary: brand.onPrimary,
-    primaryContainer: Color.alphaBlend(brand.primary.withValues(alpha: 0.12), _surface),
-    onPrimaryContainer: brand.primaryInk,
-    secondary: brand.secondary,
-    onSecondary: brand.onSecondary,
-    secondaryContainer: Color.alphaBlend(brand.secondary.withValues(alpha: 0.10), _surface),
-    onSecondaryContainer: brand.secondaryInk,
-    tertiary: brand.accent,
-    onTertiary: brand.onAccent,
-    tertiaryContainer: Color.alphaBlend(brand.accent.withValues(alpha: 0.18), _surface),
-    onTertiaryContainer: brand.accentInk,
-    surface: _surface,
-    onSurface: _ink,
+ThemeData _buildTheme() {
+  // Schéma explicite : chaque rôle est fixé, aucune teinte dérivée d'une couleur source
+  const scheme = ColorScheme(
+    brightness: Brightness.light,
+    primary: AppColors.accent,
+    onPrimary: AppColors.textInverse,
+    primaryContainer: AppColors.accentSoft,
+    onPrimaryContainer: AppColors.textPrimary,
+    // Le jaune n'est pas en « secondary » : Material 3 l'utiliserait pour des aplats (indicateurs, chips)
+    secondary: AppColors.darkSurface,
+    onSecondary: AppColors.textInverse,
+    secondaryContainer: AppColors.accentSoft,
+    onSecondaryContainer: AppColors.textPrimary,
+    tertiary: AppColors.highlight,
+    onTertiary: AppColors.highlightText,
+    tertiaryContainer: AppColors.highlightSoft,
+    onTertiaryContainer: AppColors.highlightText,
+    error: AppColors.danger,
+    onError: AppColors.textInverse,
+    errorContainer: AppColors.dangerSoft,
+    onErrorContainer: AppColors.dangerHover,
+    surface: AppColors.cardBg,
+    onSurface: AppColors.textPrimary,
+    onSurfaceVariant: AppColors.textSecondary,
+    surfaceDim: AppColors.pageBg,
+    surfaceBright: AppColors.cardBg,
+    surfaceContainerLowest: AppColors.cardBg,
+    surfaceContainerLow: AppColors.cardBg,
+    surfaceContainer: AppColors.cardBg,
+    surfaceContainerHigh: AppColors.pageBg,
+    surfaceContainerHighest: AppColors.border,
+    outline: AppColors.border,
+    outlineVariant: AppColors.border,
+    inverseSurface: AppColors.darkSurface,
+    onInverseSurface: AppColors.textInverse,
+    inversePrimary: AppColors.highlight,
+    shadow: AppColors.textPrimary,
+    scrim: AppColors.textPrimary,
     surfaceTint: Colors.transparent,
   );
 
-  // Fond général très légèrement teinté par la couleur principale
-  final background = Color.alphaBlend(brand.primary.withValues(alpha: 0.035), SnColors.pageBg);
-
-  final border = OutlineInputBorder(
-    borderRadius: BorderRadius.circular(12),
-    borderSide: BorderSide(color: Colors.grey.shade300),
+  const border = OutlineInputBorder(
+    borderRadius: AppRadius.mdAll,
+    borderSide: BorderSide(color: AppColors.border),
   );
+
+  // Titres en Poppins, texte courant en Inter (police par défaut)
+  const heading = TextStyle(fontFamily: AppFonts.heading, fontWeight: FontWeight.w600);
+  final textTheme = TextTheme(
+    displayLarge: heading.copyWith(fontWeight: FontWeight.w700),
+    displayMedium: heading.copyWith(fontWeight: FontWeight.w700),
+    displaySmall: heading.copyWith(fontWeight: FontWeight.w700),
+    headlineLarge: heading,
+    headlineMedium: heading,
+    headlineSmall: heading,
+    titleLarge: heading,
+    titleMedium: heading,
+    titleSmall: heading.copyWith(fontWeight: FontWeight.w500),
+  ).apply(bodyColor: AppColors.textPrimary, displayColor: AppColors.textPrimary);
+
+  WidgetStateProperty<Color?> whenSelected(Color selected, [Color? otherwise]) =>
+      WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.selected) ? selected : otherwise);
 
   return ThemeData(
     useMaterial3: true,
+    brightness: Brightness.light,
     colorScheme: scheme,
-    extensions: [brand],
-    scaffoldBackgroundColor: background,
-    appBarTheme: AppBarTheme(
-      backgroundColor: brand.secondary,
-      foregroundColor: brand.onSecondary,
+    fontFamily: AppFonts.body,
+    textTheme: textTheme,
+    scaffoldBackgroundColor: AppColors.pageBg,
+    dividerTheme: const DividerThemeData(color: AppColors.border, thickness: 1, space: 1),
+    appBarTheme: const AppBarTheme(
+      backgroundColor: AppColors.cardBg,
+      foregroundColor: AppColors.textPrimary,
+      surfaceTintColor: Colors.transparent,
       centerTitle: false,
       elevation: 0,
       scrolledUnderElevation: 0,
+      systemOverlayStyle: darkStatusBar,
+      titleTextStyle: TextStyle(fontFamily: AppFonts.heading, fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: _surface,
+      fillColor: AppColors.cardBg,
       border: border,
       enabledBorder: border,
-      focusedBorder: border.copyWith(borderSide: BorderSide(color: brand.primaryInk, width: 1.6)),
+      focusedBorder: border.copyWith(borderSide: const BorderSide(color: AppColors.accent, width: 1.5)),
+      errorBorder: border.copyWith(borderSide: const BorderSide(color: AppColors.danger)),
+      focusedErrorBorder: border.copyWith(borderSide: const BorderSide(color: AppColors.danger, width: 1.5)),
+      labelStyle: const TextStyle(color: AppColors.textSecondary),
+      hintStyle: const TextStyle(color: AppColors.textMuted),
       floatingLabelStyle: WidgetStateTextStyle.resolveWith(
-        (states) => TextStyle(color: states.contains(WidgetState.error) ? scheme.error : brand.primaryInk),
+        (states) => TextStyle(
+          color: states.contains(WidgetState.error)
+              ? AppColors.danger
+              : states.contains(WidgetState.focused)
+                  ? AppColors.accent
+                  : AppColors.textSecondary,
+        ),
       ),
+      errorStyle: const TextStyle(color: AppColors.danger),
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
     ),
     textSelectionTheme: TextSelectionThemeData(
-      cursorColor: brand.primaryInk,
-      selectionColor: brand.primary.withValues(alpha: 0.3),
-      selectionHandleColor: brand.primaryInk,
+      cursorColor: AppColors.accent,
+      selectionColor: AppColors.accent.withValues(alpha: 0.3),
+      selectionHandleColor: AppColors.accent,
     ),
-    filledButtonTheme: FilledButtonThemeData(
-      style: FilledButton.styleFrom(
-        backgroundColor: brand.primary,
-        foregroundColor: brand.onPrimary,
-        minimumSize: const Size.fromHeight(50),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-      ),
-    ),
+    filledButtonTheme: FilledButtonThemeData(style: _primaryButtonStyle),
+    elevatedButtonTheme: ElevatedButtonThemeData(style: _primaryButtonStyle.copyWith(elevation: const WidgetStatePropertyAll(0))),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        foregroundColor: brand.primaryInk,
-        side: BorderSide(color: brand.primaryInk.withValues(alpha: 0.5)),
+        foregroundColor: AppColors.textPrimary,
+        side: const BorderSide(color: AppColors.border),
         minimumSize: const Size.fromHeight(48),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: const RoundedRectangleBorder(borderRadius: AppRadius.mdAll),
       ),
     ),
     textButtonTheme: TextButtonThemeData(
-      style: TextButton.styleFrom(foregroundColor: brand.primaryInk),
+      style: TextButton.styleFrom(foregroundColor: AppColors.accent),
     ),
     cardTheme: CardThemeData(
-      color: _surface,
-      elevation: 0,
+      color: AppColors.cardBg,
+      surfaceTintColor: Colors.transparent,
+      elevation: 1,
+      shadowColor: AppColors.textPrimary.withValues(alpha: 0.12),
       margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
-        side: BorderSide(color: Colors.grey.shade200),
+      shape: const RoundedRectangleBorder(
+        borderRadius: AppRadius.lgAll,
+        side: BorderSide(color: AppColors.border),
       ),
     ),
     navigationBarTheme: NavigationBarThemeData(
-      backgroundColor: _surface,
+      backgroundColor: AppColors.cardBg,
       surfaceTintColor: Colors.transparent,
-      indicatorColor: brand.primary.withValues(alpha: 0.16),
+      indicatorColor: AppColors.accentSoft,
       iconTheme: WidgetStateProperty.resolveWith(
-        (states) => IconThemeData(color: states.contains(WidgetState.selected) ? brand.primaryInk : Colors.grey.shade600),
+        (s) => IconThemeData(color: s.contains(WidgetState.selected) ? AppColors.accent : AppColors.textSecondary),
       ),
       labelTextStyle: WidgetStateProperty.resolveWith(
-        (states) => TextStyle(
+        (s) => TextStyle(
           fontSize: 12,
-          fontWeight: states.contains(WidgetState.selected) ? FontWeight.w700 : FontWeight.w500,
-          color: states.contains(WidgetState.selected) ? brand.primaryInk : Colors.grey.shade700,
+          fontWeight: s.contains(WidgetState.selected) ? FontWeight.w600 : FontWeight.w500,
+          color: s.contains(WidgetState.selected) ? AppColors.accentHover : AppColors.textSecondary,
         ),
       ),
     ),
-    // L'action principale (« Nouveau devis ») ressort avec la couleur d'accent
-    floatingActionButtonTheme: FloatingActionButtonThemeData(
-      backgroundColor: brand.accent,
-      foregroundColor: brand.onAccent,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    floatingActionButtonTheme: const FloatingActionButtonThemeData(
+      backgroundColor: AppColors.accent,
+      foregroundColor: AppColors.textInverse,
+      shape: RoundedRectangleBorder(borderRadius: AppRadius.lgAll),
     ),
     segmentedButtonTheme: SegmentedButtonThemeData(
       style: ButtonStyle(
-        backgroundColor: WidgetStateProperty.resolveWith(
-          (states) => states.contains(WidgetState.selected) ? brand.primary : _surface,
-        ),
-        foregroundColor: WidgetStateProperty.resolveWith(
-          (states) => states.contains(WidgetState.selected) ? brand.onPrimary : _ink,
-        ),
-        iconColor: WidgetStateProperty.resolveWith(
-          (states) => states.contains(WidgetState.selected) ? brand.onPrimary : _ink,
-        ),
+        backgroundColor: whenSelected(AppColors.accentSoft, AppColors.cardBg),
+        foregroundColor: whenSelected(AppColors.accentHover, AppColors.textPrimary),
+        iconColor: whenSelected(AppColors.accentHover, AppColors.textSecondary),
+        side: const WidgetStatePropertyAll(BorderSide(color: AppColors.border)),
       ),
     ),
     chipTheme: ChipThemeData(
-      selectedColor: brand.primary,
-      secondarySelectedColor: brand.primary,
-      checkmarkColor: brand.onPrimary,
-      labelStyle: const TextStyle(color: _ink),
-      secondaryLabelStyle: TextStyle(color: brand.onPrimary),
-      side: BorderSide(color: Colors.grey.shade300),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      backgroundColor: AppColors.cardBg,
+      selectedColor: AppColors.accentSoft,
+      checkmarkColor: AppColors.accentHover,
+      labelStyle: TextStyle(
+        color: WidgetStateColor.resolveWith((s) => s.contains(WidgetState.selected) ? AppColors.accentHover : AppColors.textPrimary),
+      ),
+      side: WidgetStateBorderSide.resolveWith(
+        (s) => BorderSide(color: s.contains(WidgetState.selected) ? AppColors.accent : AppColors.border),
+      ),
+      shape: const RoundedRectangleBorder(borderRadius: AppRadius.pillAll),
     ),
     switchTheme: SwitchThemeData(
-      thumbColor: WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.selected) ? brand.onPrimary : null),
-      trackColor: WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.selected) ? brand.primary : null),
+      thumbColor: whenSelected(AppColors.textInverse),
+      trackColor: whenSelected(AppColors.accent),
+      trackOutlineColor: whenSelected(AppColors.accent),
     ),
     checkboxTheme: CheckboxThemeData(
-      fillColor: WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.selected) ? brand.primary : null),
-      checkColor: WidgetStatePropertyAll(brand.onPrimary),
+      fillColor: whenSelected(AppColors.accent),
+      checkColor: const WidgetStatePropertyAll(AppColors.textInverse),
     ),
-    radioTheme: RadioThemeData(
-      fillColor: WidgetStateProperty.resolveWith((s) => s.contains(WidgetState.selected) ? brand.primaryInk : null),
+    radioTheme: RadioThemeData(fillColor: whenSelected(AppColors.accent)),
+    progressIndicatorTheme: const ProgressIndicatorThemeData(color: AppColors.accent),
+    listTileTheme: const ListTileThemeData(iconColor: AppColors.textSecondary),
+    dialogTheme: const DialogThemeData(
+      backgroundColor: AppColors.cardBg,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(borderRadius: AppRadius.lgAll),
     ),
-    progressIndicatorTheme: ProgressIndicatorThemeData(color: brand.primaryInk),
-    listTileTheme: ListTileThemeData(iconColor: brand.secondaryInk),
-    dialogTheme: const DialogThemeData(backgroundColor: _surface, surfaceTintColor: Colors.transparent),
-    bottomSheetTheme: const BottomSheetThemeData(backgroundColor: _surface, surfaceTintColor: Colors.transparent),
-    snackBarTheme: SnackBarThemeData(
-      backgroundColor: brand.secondary,
-      contentTextStyle: TextStyle(color: brand.onSecondary),
-      actionTextColor: brand.onSecondary,
+    bottomSheetTheme: const BottomSheetThemeData(backgroundColor: AppColors.cardBg, surfaceTintColor: Colors.transparent),
+    snackBarTheme: const SnackBarThemeData(
+      backgroundColor: AppColors.darkSurface,
+      contentTextStyle: TextStyle(fontFamily: AppFonts.body, color: AppColors.textInverse),
+      actionTextColor: AppColors.highlight,
+      shape: RoundedRectangleBorder(borderRadius: AppRadius.mdAll),
     ),
   );
 }
+
+/// Boutons pleins : vert, texte blanc, vert foncé à l'appui.
+final ButtonStyle _primaryButtonStyle = FilledButton.styleFrom(
+  foregroundColor: AppColors.textInverse,
+  minimumSize: const Size.fromHeight(50),
+  shape: const RoundedRectangleBorder(borderRadius: AppRadius.mdAll),
+  textStyle: const TextStyle(fontFamily: AppFonts.body, fontSize: 16, fontWeight: FontWeight.w600),
+).copyWith(
+  backgroundColor: WidgetStateProperty.resolveWith(
+    (s) => s.contains(WidgetState.disabled)
+        ? AppColors.textPrimary.withValues(alpha: 0.12)
+        : s.contains(WidgetState.pressed)
+            ? AppColors.accentHover
+            : AppColors.accent,
+  ),
+  foregroundColor: WidgetStateProperty.resolveWith(
+    (s) => s.contains(WidgetState.disabled) ? AppColors.textPrimary.withValues(alpha: 0.38) : AppColors.textInverse,
+  ),
+);

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../../core/utils/format.dart';
 import 'quote.dart';
+import '../../core/theme/app_colors.dart';
 
 /// Saisie de l'acompte reçu : montant, date, moyen de paiement, référence.
 Future<Map<String, dynamic>?> showDepositSheet(BuildContext context, Quote quote) {
@@ -75,7 +76,7 @@ class _DepositSheetState extends State<_DepositSheet> {
           children: [
             Text('Acompte reçu', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
             const SizedBox(height: 4),
-            Text('Acompte demandé : ${formatMoney(widget.quote.depositAmount)}', style: TextStyle(color: Colors.grey.shade700)),
+            Text('Acompte demandé : ${formatMoney(widget.quote.depositAmount)}', style: TextStyle(color: AppColors.textSecondary)),
             const SizedBox(height: 16),
             TextFormField(
               controller: _amount,

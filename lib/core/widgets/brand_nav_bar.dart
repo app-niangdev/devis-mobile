@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../theme/app_theme.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_radius.dart';
 
 class BrandNavItem {
   const BrandNavItem({required this.icon, required this.selectedIcon, required this.label});
@@ -11,8 +12,8 @@ class BrandNavItem {
   final String label;
 }
 
-/// Barre de navigation flottante aux couleurs de l'entreprise : l'onglet actif
-/// s'élargit en pastille (couleur principale) et affiche son libellé.
+/// Barre de navigation flottante SN Devis : l'onglet actif s'élargit en pastille
+/// vert clair et affiche son libellé.
 class BrandNavBar extends StatelessWidget {
   const BrandNavBar({super.key, required this.items, required this.selectedIndex, required this.onSelected});
 
@@ -22,8 +23,6 @@ class BrandNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final brand = context.brand;
-
     return SafeArea(
       top: false,
       minimum: const EdgeInsets.only(bottom: 10),
@@ -33,12 +32,11 @@ class BrandNavBar extends StatelessWidget {
           height: 66,
           padding: const EdgeInsets.symmetric(horizontal: 8),
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: brand.secondary.withValues(alpha: 0.06)),
+            color: AppColors.cardBg,
+            borderRadius: AppRadius.pillAll,
+            border: Border.all(color: AppColors.border),
             boxShadow: [
-              BoxShadow(color: brand.secondary.withValues(alpha: 0.12), blurRadius: 24, offset: const Offset(0, 8)),
-              BoxShadow(color: brand.primary.withValues(alpha: 0.06), blurRadius: 6, offset: const Offset(0, 2)),
+              BoxShadow(color: AppColors.textPrimary.withValues(alpha: 0.10), blurRadius: 24, offset: const Offset(0, 8)),
             ],
           ),
           child: Row(
@@ -73,8 +71,7 @@ class _NavButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final brand = context.brand;
-    final color = selected ? brand.onPrimary : Colors.grey.shade600;
+    final color = selected ? AppColors.accent : AppColors.textSecondary;
 
     final button = Semantics(
       selected: selected,
@@ -90,17 +87,8 @@ class _NavButton extends StatelessWidget {
           height: 48,
           padding: EdgeInsets.symmetric(horizontal: selected ? 16 : 14),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            color: selected ? null : Colors.transparent,
-            gradient:
-                selected
-                    ? LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [brand.primary, Color.lerp(brand.primary, brand.secondary, 0.25)!],
-                    )
-                    : null,
-            boxShadow: selected ? [BoxShadow(color: brand.primary.withValues(alpha: 0.35), blurRadius: 12, offset: const Offset(0, 4))] : const [],
+            borderRadius: AppRadius.pillAll,
+            color: selected ? AppColors.accentSoft : AppColors.accentSoft.withValues(alpha: 0),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -124,7 +112,8 @@ class _NavButton extends StatelessWidget {
                               item.label,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 13.5, letterSpacing: .1),
+                              // Vert foncé : le vert SN manque de contraste sur le fond vert clair
+                              style: const TextStyle(color: AppColors.accentHover, fontWeight: FontWeight.w600, fontSize: 13.5, letterSpacing: .1),
                             ),
                           )
                           : const SizedBox.shrink(),

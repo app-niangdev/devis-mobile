@@ -7,6 +7,7 @@ import '../../core/auth/profile.dart';
 import '../../core/auth/session.dart';
 import '../../core/widgets/common.dart';
 import 'company.dart';
+import '../../core/theme/app_colors.dart';
 
 /// Tampon de l'entreprise : aperçu, couleur d'encre et apposition sur les devis.
 class StampScreen extends StatefulWidget {
@@ -168,9 +169,9 @@ class _StampScreenState extends State<StampScreen> with ReloadOnDataChange {
                       decoration: BoxDecoration(
                         color: parseHexColor(hex, Colors.black),
                         shape: BoxShape.circle,
-                        border: Border.all(color: hex == _color ? Colors.black87 : Colors.black12, width: hex == _color ? 3 : 1),
+                        border: Border.all(color: hex == _color ? AppColors.textPrimary : AppColors.border, width: hex == _color ? 3 : 1),
                       ),
-                      child: hex == _color ? const Icon(Icons.check, color: Colors.white) : null,
+                      child: hex == _color ? const Icon(Icons.check, color: AppColors.textInverse) : null,
                     ),
                   ),
                 ),

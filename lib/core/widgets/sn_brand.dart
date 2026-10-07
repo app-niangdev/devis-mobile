@@ -1,14 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-/// Identité de la plateforme SN Devis (distincte de la charte de chaque entreprise).
-/// Palette officielle, identique au frontend (frontend/src/styles/tokens.scss).
-abstract final class SnColors {
-  static const green = Color(0xFF00853F);
-  static const greenDark = Color(0xFF006B33);
-  static const yellow = Color(0xFFFDEF42);
-  static const ink = Color(0xFF17202A);
-  static const pageBg = Color(0xFFF5F7F6);
-}
+import '../theme/app_colors.dart';
+import '../theme/app_theme.dart';
 
 /// Symbole SN Devis (document vert coché en jaune).
 class SnSymbol extends StatelessWidget {
@@ -45,7 +39,7 @@ class PoweredBySn extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text('Propulsé par', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+        const Text('Propulsé par', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
         const SizedBox(width: 8),
         const SnLogo(height: 18),
       ],
@@ -59,16 +53,19 @@ class SnSplash extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SnSymbol(size: 88),
-            SizedBox(height: 28),
-            SizedBox(width: 26, height: 26, child: CircularProgressIndicator(strokeWidth: 2.6, color: SnColors.green)),
-          ],
+    return const AnnotatedRegion<SystemUiOverlayStyle>(
+      value: darkStatusBar,
+      child: Scaffold(
+        backgroundColor: AppColors.cardBg,
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SnSymbol(size: 88),
+              SizedBox(height: 28),
+              SizedBox(width: 26, height: 26, child: CircularProgressIndicator(strokeWidth: 2.6, color: AppColors.accent)),
+            ],
+          ),
         ),
       ),
     );

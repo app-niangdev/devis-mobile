@@ -7,8 +7,8 @@ import 'package:provider/provider.dart';
 import '../../core/api/data_changes.dart';
 import '../../core/utils/format.dart';
 import '../../core/widgets/common.dart';
-import '../../core/theme/app_theme.dart';
 import 'customer.dart';
+import '../../core/theme/app_colors.dart';
 
 class CustomersScreen extends StatefulWidget {
   const CustomersScreen({super.key});
@@ -166,9 +166,9 @@ class _CustomersScreenState extends State<CustomersScreen> with ReloadOnDataChan
             child: ListTile(
               onTap: () => _open('/customers/${c.id}'),
               leading: CircleAvatar(
-                backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
+                backgroundColor: AppColors.accentSoft,
                 child: Text(c.name.isEmpty ? '?' : c.name[0].toUpperCase(),
-                    style: TextStyle(color: context.brand.primaryInk, fontWeight: FontWeight.w700)),
+                    style: TextStyle(color: AppColors.accent, fontWeight: FontWeight.w700)),
               ),
               title: Text(c.name, style: const TextStyle(fontWeight: FontWeight.w600)),
               subtitle: Text(c.phoneDisplay),
@@ -176,9 +176,9 @@ class _CustomersScreenState extends State<CustomersScreen> with ReloadOnDataChan
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text('${c.quotesCount} devis', style: TextStyle(color: Colors.grey.shade700, fontSize: 12)),
+                  Text('${c.quotesCount} devis', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
                   if (c.acceptedAmount > 0)
-                    Text(formatMoney(c.acceptedAmount), style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF16A34A), fontSize: 13)),
+                    Text(formatMoney(c.acceptedAmount), style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.success, fontSize: 13)),
                 ],
               ),
             ),

@@ -8,6 +8,8 @@ import '../../core/widgets/common.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/update/app_update.dart';
 import '../subscription/subscription_offers.dart';
+import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_radius.dart';
 
 /// Onglet « Entreprise » : charte, abonnement, profil et déconnexion.
 class CompanyScreen extends StatelessWidget {
@@ -19,11 +21,13 @@ class CompanyScreen extends StatelessWidget {
     final profile = session.profile;
     final branding = profile?.branding;
     final sub = profile?.subscription;
+    // Pastille du logo aux couleurs de l'entreprise : seul endroit de l'onglet où elles apparaissent
+    final onLogo = readableOn(branding?.primary ?? AppColors.accent);
 
     final (subLabel, subColor) = switch (sub?.state) {
-      'active' => ('Actif', const Color(0xFF16A34A)),
-      'expiring' => ('Expire bientôt', const Color(0xFFD97706)),
-      _ => ('Expiré', const Color(0xFFDC2626)),
+      'active' => ('Actif', AppColors.success),
+      'expiring' => ('Expire bientôt', AppColors.warning),
+      _ => ('Expiré', AppColors.danger),
     };
 
     return Scaffold(
@@ -42,23 +46,23 @@ class CompanyScreen extends StatelessWidget {
                       width: 56,
                       height: 56,
                       clipBehavior: Clip.antiAlias,
-                      decoration: BoxDecoration(color: branding?.primary, borderRadius: BorderRadius.circular(14)),
+                      decoration: BoxDecoration(color: branding?.primary, borderRadius: AppRadius.lgAll),
                       alignment: Alignment.center,
                       child: branding?.logoUrl != null
                           ? Image.network(branding!.logoUrl!, fit: BoxFit.cover, width: 56, height: 56,
                               // Balise <img> sur le web : évite le blocage CORS de /storage
                               webHtmlElementStrategy: WebHtmlElementStrategy.prefer,
-                              errorBuilder: (_, __, ___) => Icon(Icons.business, color: context.brand.onPrimary))
+                              errorBuilder: (_, __, ___) => Icon(Icons.business, color: onLogo))
                           : Text((branding?.name ?? '?').characters.first,
-                              style: TextStyle(color: context.brand.onPrimary, fontSize: 24, fontWeight: FontWeight.w800)),
+                              style: TextStyle(color: onLogo, fontSize: 24, fontWeight: FontWeight.w800)),
                     ),
                     const SizedBox(width: 14),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(branding?.name ?? '', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: context.brand.secondaryInk)),
-                          if (branding?.slogan != null) Text(branding!.slogan!, style: TextStyle(color: Colors.grey.shade700)),
+                          Text(branding?.name ?? '', style: const TextStyle(fontFamily: AppFonts.heading, fontSize: 18, fontWeight: FontWeight.w700)),
+                          if (branding?.slogan != null) Text(branding!.slogan!, style: const TextStyle(color: AppColors.textSecondary)),
                           const SizedBox(height: 8),
                           Row(
                             children: [
@@ -67,7 +71,7 @@ class CompanyScreen extends StatelessWidget {
                                   width: 22,
                                   height: 22,
                                   margin: const EdgeInsets.only(right: 6),
-                                  decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(6), border: Border.all(color: Colors.black12)),
+                                  decoration: BoxDecoration(color: color, borderRadius: AppRadius.smAll, border: Border.all(color: AppColors.border)),
                                 ),
                             ],
                           ),
@@ -129,8 +133,8 @@ class CompanyScreen extends StatelessWidget {
                   ),
                   const Divider(height: 1),
                   ListTile(
-                    leading: Icon(Icons.logout, color: Colors.red.shade700),
-                    title: Text('Se déconnecter', style: TextStyle(color: Colors.red.shade700)),
+                    leading: const Icon(Icons.logout, color: AppColors.danger),
+                    title: const Text('Se déconnecter', style: TextStyle(color: AppColors.danger)),
                     onTap: () async {
                       final ok = await confirmAction(context, title: 'Se déconnecter ?', message: 'Vous devrez saisir à nouveau votre numéro et votre mot de passe.', confirmLabel: 'Se déconnecter');
                       if (ok) {

@@ -9,6 +9,8 @@ import '../../core/utils/format.dart';
 import '../../core/widgets/common.dart';
 import '../company/company.dart';
 import '../subscription/subscription_offers.dart';
+import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_radius.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -49,7 +51,6 @@ class _DashboardScreenState extends State<DashboardScreen> with ReloadOnDataChan
   @override
   Widget build(BuildContext context) {
     final profile = context.watch<Session>().profile;
-    final brand = context.brand;
 
     return Scaffold(
       appBar: AppBar(title: Text(profile?.branding.name ?? 'Accueil', style: const TextStyle(fontWeight: FontWeight.w700))),
@@ -81,16 +82,16 @@ class _DashboardScreenState extends State<DashboardScreen> with ReloadOnDataChan
                   Container(
                     margin: const EdgeInsets.only(bottom: 16),
                     padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(color: Colors.orange.shade50, borderRadius: BorderRadius.circular(12)),
+                    decoration: const BoxDecoration(color: AppColors.warningSoft, borderRadius: AppRadius.mdAll),
                     child: Row(
                       children: [
-                        Icon(Icons.warning_amber_rounded, color: Colors.orange.shade800),
+                        const Icon(Icons.warning_amber_rounded, color: AppColors.warning),
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
                             'Votre abonnement expire ${daysLeft == 0 ? "aujourd'hui" : 'dans $daysLeft jour${(daysLeft ?? 0) > 1 ? 's' : ''}'} '
                             '(${formatDate(d.subscription['ends_at'] as String?)}).',
-                            style: TextStyle(color: Colors.orange.shade900),
+                            style: const TextStyle(color: AppColors.textPrimary),
                           ),
                         ),
                         TextButton(
@@ -112,7 +113,7 @@ class _DashboardScreenState extends State<DashboardScreen> with ReloadOnDataChan
                       label: 'Acceptés ce mois',
                       value: formatMoney(d.month['accepted_amount'] as int? ?? 0),
                       hint: '${d.month['accepted_count'] ?? 0} devis',
-                      color: const Color(0xFF16A34A),
+                      color: AppColors.success,
                       onTap: () => context.go('/quotes?status=accepted'),
                     ),
                     _Kpi(
@@ -122,20 +123,20 @@ class _DashboardScreenState extends State<DashboardScreen> with ReloadOnDataChan
                           d.count('sent_expired') > 0
                               ? '${formatMoney(d.total('sent'))} · ${d.count('sent_expired')} expiré${d.count('sent_expired') > 1 ? 's' : ''}'
                               : formatMoney(d.total('sent')),
-                      color: const Color(0xFF2563EB),
+                      color: AppColors.info,
                       onTap: () => context.go('/quotes?status=sent'),
                     ),
                     _Kpi(
                       label: 'Taux d\'acceptation',
                       value: d.acceptanceRate == null ? '—' : '${d.acceptanceRate!.toStringAsFixed(0)} %',
                       hint: d.acceptanceRate == null ? 'Aucune réponse client' : '${d.count('accepted')} acceptés · ${d.count('refused')} refusés',
-                      color: brand.primaryInk,
+                      color: AppColors.accent,
                     ),
                     _Kpi(
                       label: 'Acomptes reçus',
                       value: formatMoney(d.deposits['received'] as int? ?? 0),
                       hint: 'sur ${formatMoney(d.deposits['expected'] as int? ?? 0)} attendus',
-                      color: const Color(0xFFD97706),
+                      color: AppColors.warning,
                       onTap: () => context.go('/quotes?status=accepted'),
                     ),
                   ],
@@ -149,7 +150,7 @@ class _DashboardScreenState extends State<DashboardScreen> with ReloadOnDataChan
                       d.awaiting.isEmpty
                           ? Padding(
                             padding: const EdgeInsets.symmetric(vertical: 12),
-                            child: Text('Aucun devis en attente.', style: TextStyle(color: Colors.grey.shade600)),
+                            child: const Text('Aucun devis en attente.', style: TextStyle(color: AppColors.textSecondary)),
                           )
                           : Column(
                             children: [
@@ -159,7 +160,7 @@ class _DashboardScreenState extends State<DashboardScreen> with ReloadOnDataChan
                                   title: Text(q['customer_name'] as String? ?? 'Client', style: const TextStyle(fontWeight: FontWeight.w600)),
                                   subtitle: Text(
                                     '${q['quote_number']} · envoyé le ${formatDate(q['sent_at'] as String?)}${q['is_expired'] == true ? ' · expiré' : ''}',
-                                    style: q['is_expired'] == true ? const TextStyle(color: Color(0xFFD97706)) : null,
+                                    style: q['is_expired'] == true ? const TextStyle(color: AppColors.warning) : null,
                                   ),
                                   trailing: Text(formatMoney(q['total_amount'] as int? ?? 0), style: const TextStyle(fontWeight: FontWeight.w700)),
                                   onTap: () => context.push('/quotes/${q['id']}'),
@@ -193,7 +194,7 @@ class _DashboardScreenState extends State<DashboardScreen> with ReloadOnDataChan
   }
 }
 
-/// Bandeau d'accueil aux couleurs de l'entreprise.
+/// Bandeau d'accueil anthracite (comme la barre latérale du web), chiffre clé en jaune.
 class _Welcome extends StatelessWidget {
   const _Welcome({required this.firstName, required this.acceptedThisMonth});
 
@@ -202,29 +203,22 @@ class _Welcome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final brand = context.brand;
-    final end = Color.lerp(brand.secondary, brand.primary, 0.35)!;
-    final onBanner = readableOn(Color.lerp(brand.secondary, end, 0.5)!);
-
     return Container(
       padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [brand.secondary, end]),
-        borderRadius: BorderRadius.circular(18),
-      ),
+      decoration: const BoxDecoration(color: AppColors.darkSurface, borderRadius: AppRadius.lgAll),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Bonjour $firstName 👋', style: TextStyle(color: onBanner, fontSize: 20, fontWeight: FontWeight.w800)),
+          Text('Bonjour $firstName 👋', style: const TextStyle(fontFamily: AppFonts.heading, color: AppColors.textInverse, fontSize: 20, fontWeight: FontWeight.w700)),
           const SizedBox(height: 4),
-          Text('Voici où en sont vos devis.', style: TextStyle(color: onBanner.withValues(alpha: 0.8))),
+          Text('Voici où en sont vos devis.', style: TextStyle(color: AppColors.textInverse.withValues(alpha: 0.8))),
           const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(color: brand.accent, borderRadius: BorderRadius.circular(20)),
+            decoration: const BoxDecoration(color: AppColors.highlight, borderRadius: AppRadius.pillAll),
             child: Text(
               acceptedThisMonth == 0 ? 'Aucun devis accepté ce mois-ci' : '$acceptedThisMonth devis accepté${acceptedThisMonth > 1 ? 's' : ''} ce mois-ci',
-              style: TextStyle(color: brand.onAccent, fontSize: 12, fontWeight: FontWeight.w700),
+              style: const TextStyle(color: AppColors.highlightText, fontSize: 12, fontWeight: FontWeight.w700),
             ),
           ),
         ],
@@ -256,13 +250,13 @@ class _Kpi extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(label, style: TextStyle(color: Colors.grey.shade700, fontSize: 12.5), maxLines: 1, overflow: TextOverflow.ellipsis),
+              Text(label, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12.5), maxLines: 1, overflow: TextOverflow.ellipsis),
               FittedBox(
                 fit: BoxFit.scaleDown,
                 alignment: Alignment.centerLeft,
                 child: Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: color)),
               ),
-              Text(hint, style: TextStyle(color: Colors.grey.shade600, fontSize: 11.5), maxLines: 1, overflow: TextOverflow.ellipsis),
+              Text(hint, style: const TextStyle(color: AppColors.textSecondary, fontSize: 11.5), maxLines: 1, overflow: TextOverflow.ellipsis),
             ],
           ),
         ),
@@ -283,13 +277,13 @@ class _Mini extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: InkWell(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: AppRadius.lgAll,
         onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.all(14),
           child: Row(
             children: [
-              Icon(icon, color: context.brand.primaryInk),
+              Icon(icon, color: AppColors.accent),
               const SizedBox(width: 10),
               Expanded(child: Text(label)),
               Text(value, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),

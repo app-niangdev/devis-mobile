@@ -10,6 +10,8 @@ import '../../core/auth/session.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/common.dart';
 import 'company.dart';
+import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_radius.dart';
 
 /// Informations de l'entreprise : identité, 3 couleurs, logo, mentions et réglages des devis.
 class CompanyFormScreen extends StatefulWidget {
@@ -105,7 +107,7 @@ class _CompanyFormScreenState extends State<CompanyFormScreen> {
                 const SizedBox(height: 12),
                 TextField(
                   controller: hex,
-                  decoration: const InputDecoration(labelText: 'Code couleur', hintText: '#1D4ED8'),
+                  decoration: const InputDecoration(labelText: 'Code couleur', hintText: '#00853F'),
                   inputFormatters: [LengthLimitingTextInputFormatter(7)],
                   onChanged: (value) {
                     if (RegExp(r'^#[0-9A-Fa-f]{6}$').hasMatch(value)) {
@@ -200,7 +202,7 @@ class _CompanyFormScreenState extends State<CompanyFormScreen> {
                               width: 64,
                               height: 64,
                               clipBehavior: Clip.antiAlias,
-                              decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(14)),
+                              decoration: const BoxDecoration(color: AppColors.pageBg, borderRadius: AppRadius.lgAll),
                               child: _newLogo != null
                                   ? FutureBuilder(
                                       future: _newLogo!.readAsBytes(),
@@ -255,7 +257,7 @@ class _CompanyFormScreenState extends State<CompanyFormScreen> {
                                 leading: Container(
                                   width: 36,
                                   height: 36,
-                                  decoration: BoxDecoration(color: _colors[entry.key], borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.black12)),
+                                  decoration: BoxDecoration(color: _colors[entry.key], borderRadius: AppRadius.mdAll, border: Border.all(color: AppColors.border)),
                                 ),
                                 title: Text(entry.value),
                                 subtitle: Text(colorToHex(_colors[entry.key]!)),
@@ -312,7 +314,7 @@ class _CompanyFormScreenState extends State<CompanyFormScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Text('Acompte proposé sur les nouveaux devis', style: TextStyle(color: Colors.grey.shade700)),
+                            const Text('Acompte proposé sur les nouveaux devis', style: TextStyle(color: AppColors.textSecondary)),
                             const SizedBox(height: 8),
                             SegmentedButton<String>(
                               segments: const [
@@ -373,7 +375,7 @@ class _CompanyFormScreenState extends State<CompanyFormScreen> {
   }
 }
 
-/// Aperçu en direct des 3 couleurs : dans l'application et sur l'en-tête d'un devis.
+/// Aperçu en direct des 3 couleurs sur un devis (l'application reste aux couleurs SN Devis).
 class _Preview extends StatelessWidget {
   const _Preview({required this.name, required this.primary, required this.secondary, required this.accent});
 
@@ -384,65 +386,22 @@ class _Preview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final brand = BrandColors.from(Branding(name: name, primary: primary, secondary: secondary, accent: accent));
+    final onSecondary = readableOn(secondary);
+    final onAccent = readableOn(accent);
     final title = name.isEmpty ? 'Votre entreprise' : name;
     final tooLight = [
-      if (contrastRatio(primary, Colors.white) < 3) 'principale',
-      if (contrastRatio(secondary, Colors.white) < 3) 'secondaire',
+      if (contrastRatio(primary, AppColors.cardBg) < 3) 'principale',
+      if (contrastRatio(secondary, AppColors.cardBg) < 3) 'secondaire',
     ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text('Dans l\'application', style: TextStyle(color: Colors.grey.shade600, fontSize: 12, fontWeight: FontWeight.w600)),
-        const SizedBox(height: 6),
-        Container(
-          clipBehavior: Clip.antiAlias,
-          decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade300), borderRadius: BorderRadius.circular(12)),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                color: brand.secondary,
-                child: Text(title, style: TextStyle(color: brand.onSecondary, fontWeight: FontWeight.w700)),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(12),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                      decoration: BoxDecoration(color: brand.primary, borderRadius: BorderRadius.circular(10)),
-                      child: Text('Enregistrer', style: TextStyle(color: brand.onPrimary, fontWeight: FontWeight.w600, fontSize: 13)),
-                    ),
-                    const SizedBox(width: 12),
-                    Text('Tout voir', style: TextStyle(color: brand.primaryInk, fontWeight: FontWeight.w600, fontSize: 13)),
-                    const Spacer(),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(color: brand.accent, borderRadius: BorderRadius.circular(12)),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.add, size: 16, color: brand.onAccent),
-                          const SizedBox(width: 4),
-                          Text('Devis', style: TextStyle(color: brand.onAccent, fontWeight: FontWeight.w700, fontSize: 13)),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-        Text('Sur vos devis', style: TextStyle(color: Colors.grey.shade600, fontSize: 12, fontWeight: FontWeight.w600)),
+        const Text('Sur vos devis', style: TextStyle(color: AppColors.textSecondary, fontSize: 12, fontWeight: FontWeight.w600)),
         const SizedBox(height: 6),
         Container(
           padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade300), borderRadius: BorderRadius.circular(10)),
+          decoration: BoxDecoration(border: Border.all(color: AppColors.border), borderRadius: AppRadius.mdAll),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -460,7 +419,7 @@ class _Preview extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(6),
                 color: secondary,
-                child: Text('DÉSIGNATION · QTÉ · MONTANT', style: TextStyle(color: brand.onSecondary, fontSize: 11)),
+                child: Text('DÉSIGNATION · QTÉ · MONTANT', style: TextStyle(color: onSecondary, fontSize: 11)),
               ),
               const SizedBox(height: 6),
               Align(
@@ -468,7 +427,7 @@ class _Preview extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                   color: accent,
-                  child: Text('Acompte à la commande', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12, color: brand.onAccent)),
+                  child: Text('Acompte à la commande', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12, color: onAccent)),
                 ),
               ),
             ],
@@ -479,13 +438,13 @@ class _Preview extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.info_outline, size: 18, color: Colors.orange.shade800),
+              const Icon(Icons.info_outline, size: 18, color: AppColors.warning),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Couleur ${tooLight.join(' et ')} très claire : sur fond blanc, l\'application en affichera une version '
-                  'plus foncée pour que les textes restent lisibles.',
-                  style: TextStyle(color: Colors.orange.shade900, fontSize: 12.5, height: 1.35),
+                  'Couleur ${tooLight.join(' et ')} très claire : sur le fond blanc du devis, '
+                  'les titres risquent d\'être difficiles à lire. Préférez une teinte plus foncée.',
+                  style: const TextStyle(color: AppColors.textPrimary, fontSize: 12.5, height: 1.35),
                 ),
               ),
             ],

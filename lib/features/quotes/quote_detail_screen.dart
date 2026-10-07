@@ -6,7 +6,8 @@ import 'package:share_plus/share_plus.dart';
 import '../../core/api/data_changes.dart';
 import '../../core/utils/format.dart';
 import '../../core/widgets/common.dart';
-import '../../core/theme/app_theme.dart';
+import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_radius.dart';
 import 'deposit_sheet.dart';
 import 'quote.dart';
 import 'quote_widgets.dart';
@@ -243,7 +244,7 @@ class _QuoteDetailScreenState extends State<QuoteDetailScreen> with ReloadOnData
                   ],
                 ),
                 const SizedBox(height: 4),
-                Text(quote.customer['phone_display'] as String? ?? '', style: TextStyle(color: Colors.grey.shade700)),
+                Text(quote.customer['phone_display'] as String? ?? '', style: TextStyle(color: AppColors.textSecondary)),
                 if (quote.title != null) ...[
                   const SizedBox(height: 10),
                   Text(quote.title!, style: const TextStyle(fontWeight: FontWeight.w600)),
@@ -253,7 +254,7 @@ class _QuoteDetailScreenState extends State<QuoteDetailScreen> with ReloadOnData
                   'Créé le ${formatDate(quote.createdAt)}'
                   '${quote.validUntil != null ? ' · valable jusqu\'au ${formatDate(quote.validUntil)}' : ''}'
                   '${quote.sourceNumber != null ? '\nCopie du devis ${quote.sourceNumber}' : ''}',
-                  style: TextStyle(color: Colors.grey.shade600, fontSize: 13, height: 1.4),
+                  style: TextStyle(color: AppColors.textSecondary, fontSize: 13, height: 1.4),
                 ),
               ],
             ),
@@ -273,12 +274,12 @@ class _QuoteDetailScreenState extends State<QuoteDetailScreen> with ReloadOnData
                 InfoRow('Remise', '− ${formatMoney(quote.discount)}'),
                 const Divider(),
               ],
-              InfoRow('Total', formatMoney(quote.total), bold: true, color: context.brand.secondaryInk),
+              InfoRow('Total', formatMoney(quote.total), bold: true, color: AppColors.textPrimary),
               if (quote.depositAmount > 0) ...[
                 const SizedBox(height: 6),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(color: scheme.tertiaryContainer, borderRadius: BorderRadius.circular(10)),
+                  decoration: BoxDecoration(color: scheme.tertiaryContainer, borderRadius: AppRadius.mdAll),
                   child: InfoRow(
                     'Acompte à la commande${quote.depositType == 'percent' ? ' (${quote.depositValue} %)' : ''}',
                     formatMoney(quote.depositAmount),
@@ -295,7 +296,7 @@ class _QuoteDetailScreenState extends State<QuoteDetailScreen> with ReloadOnData
           SectionCard(
             title: 'Acompte',
             child: quote.depositReceived == null
-                ? Text('Pas encore reçu.', style: TextStyle(color: Colors.grey.shade700))
+                ? const Text('Pas encore reçu.', style: TextStyle(color: AppColors.textSecondary))
                 : Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -305,7 +306,7 @@ class _QuoteDetailScreenState extends State<QuoteDetailScreen> with ReloadOnData
                         'Reçu le ${formatDate(quote.depositReceived!['received_at'] as String?)} · '
                         '${paymentMethodLabels[quote.depositReceived!['payment_method']] ?? ''}'
                         '${quote.depositReceived!['reference'] != null ? ' · réf. ${quote.depositReceived!['reference']}' : ''}',
-                        style: TextStyle(color: Colors.grey.shade700),
+                        style: TextStyle(color: AppColors.textSecondary),
                       ),
                     ],
                   ),
@@ -341,7 +342,7 @@ class _QuoteDetailScreenState extends State<QuoteDetailScreen> with ReloadOnData
                         if (!line.isLabor || line.quantity != 1)
                           Text(
                             '${formatQuantity(line.quantity)} ${line.unitName ?? ''} × ${formatMoney(line.unitPrice)}',
-                            style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                            style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
                           ),
                       ],
                     ),
@@ -373,7 +374,7 @@ class _QuoteDetailScreenState extends State<QuoteDetailScreen> with ReloadOnData
         children: [
           Expanded(
             child: OutlinedButton(
-              style: OutlinedButton.styleFrom(foregroundColor: Colors.red.shade700),
+              style: OutlinedButton.styleFrom(foregroundColor: AppColors.danger),
               onPressed: _busy ? null : () => _decide('refused'),
               child: const Text('Refusé'),
             ),
@@ -381,7 +382,7 @@ class _QuoteDetailScreenState extends State<QuoteDetailScreen> with ReloadOnData
           const SizedBox(width: 10),
           Expanded(
             child: FilledButton(
-              style: FilledButton.styleFrom(backgroundColor: const Color(0xFF16A34A)),
+              style: FilledButton.styleFrom(backgroundColor: AppColors.success),
               onPressed: _busy ? null : () => _decide('accepted'),
               child: const Text('Accepté'),
             ),
@@ -399,7 +400,7 @@ class _QuoteDetailScreenState extends State<QuoteDetailScreen> with ReloadOnData
     return SafeArea(
       child: Container(
         padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-        decoration: BoxDecoration(color: Colors.white, border: Border(top: BorderSide(color: Colors.grey.shade200))),
+        decoration: const BoxDecoration(color: AppColors.cardBg, border: Border(top: BorderSide(color: AppColors.border))),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

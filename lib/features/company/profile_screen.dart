@@ -6,6 +6,7 @@ import '../../core/api/api_exception.dart';
 import '../../core/auth/session.dart';
 import '../../core/utils/phone.dart';
 import '../../core/widgets/common.dart';
+import '../../core/theme/app_colors.dart';
 
 /// Profil du gestionnaire. Le numéro de connexion n'est modifiable que par l'administrateur.
 class ProfileScreen extends StatefulWidget {
@@ -79,7 +80,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   InfoRow('Téléphone de connexion', _profile?.phoneDisplay ?? ''),
                   const SizedBox(height: 6),
                   Text('Pour changer de numéro, contactez l\'administrateur de la plateforme.',
-                      style: TextStyle(color: Colors.grey.shade600, fontSize: 12.5)),
+                      style: TextStyle(color: AppColors.textSecondary, fontSize: 12.5)),
                 ],
               ),
             ),

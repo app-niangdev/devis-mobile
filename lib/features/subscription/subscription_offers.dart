@@ -6,6 +6,8 @@ import '../../core/api/api_client.dart';
 import '../../core/auth/session.dart';
 import '../../core/utils/format.dart';
 import '../../core/utils/phone.dart';
+import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_radius.dart';
 
 /// Forfait proposé par la plateforme.
 class OfferPlan {
@@ -105,15 +107,15 @@ class _OffersPanelState extends State<OffersPanel> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Nos forfaits', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: .6, color: Colors.grey.shade600)),
+            Text('Nos forfaits', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: .6, color: AppColors.textSecondary)),
             const SizedBox(height: 8),
             for (final plan in offers.plans)
               Container(
                 margin: const EdgeInsets.only(bottom: 8),
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey.shade300),
-                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.border),
+                  borderRadius: AppRadius.mdAll,
                 ),
                 child: Row(
                   children: [
@@ -124,7 +126,7 @@ class _OffersPanelState extends State<OffersPanel> {
                           Text(plan.name, style: const TextStyle(fontWeight: FontWeight.w700)),
                           Text(
                             plan.description?.isNotEmpty == true ? plan.description! : plan.durationLabel,
-                            style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                            style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
                           ),
                         ],
                       ),
@@ -142,7 +144,7 @@ class _OffersPanelState extends State<OffersPanel> {
                 'Pour renouveler, payez le forfait choisi${offers.paymentMethods?.isNotEmpty == true ? ' (${offers.paymentMethods})' : ''}',
                 'puis contactez ${offers.contactName?.isNotEmpty == true ? offers.contactName : 'l\'administrateur'}.',
               ].join(' '),
-              style: TextStyle(color: Colors.grey.shade700, fontSize: 13, height: 1.4),
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 13, height: 1.4),
             ),
             if (offers.whatsapp?.isNotEmpty == true || offers.phone?.isNotEmpty == true) ...[
               const SizedBox(height: 12),
