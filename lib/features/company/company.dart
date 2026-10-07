@@ -66,9 +66,57 @@ class StampRepository {
   }
 }
 
+const monthNames = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+
+/// Période des chiffres de l'accueil : une année (éventuellement un mois), un jour précis,
+/// ou tout l'historique (aucun champ).
+class DashboardPeriod {
+  const DashboardPeriod({this.year, this.month, this.date});
+
+  /// Par défaut : le mois en cours.
+  factory DashboardPeriod.currentMonth() {
+    final now = DateTime.now();
+    return DashboardPeriod(year: now.year, month: now.month);
+  }
+
+  final int? year;
+  final int? month;
+  final DateTime? date;
+
+  bool get isAllTime => year == null && date == null;
+
+  Map<String, dynamic> toQuery() => {
+        if (date != null) 'date': '${date!.year}-${_two(date!.month)}-${_two(date!.day)}'
+        else if (year != null) ...{
+          'year': year,
+          if (month != null) 'month': month,
+        },
+      };
+
+  /// « en octobre 2026 », « en 2025 », « le 07/10/2026 », « depuis le début ».
+  String get label {
+    if (date != null) {
+      return 'le ${_two(date!.day)}/${_two(date!.month)}/${date!.year}';
+    }
+    if (year == null) {
+      return 'depuis le début';
+    }
+    return month == null ? 'en $year' : 'en ${monthNames[month! - 1]} $year';
+  }
+
+  static String _two(int n) => n.toString().padLeft(2, '0');
+
+  @override
+  bool operator ==(Object other) => other is DashboardPeriod && other.year == year && other.month == month && other.date == date;
+
+  @override
+  int get hashCode => Object.hash(year, month, date);
+}
+
 class Dashboard {
   Dashboard.fromJson(Map<String, dynamic> json)
-      : quotes = Map<String, dynamic>.from(json['quotes'] as Map? ?? const {}),
+      : years = (json['years'] as List? ?? const []).map((y) => (y as num).toInt()).toList(),
+        quotes = Map<String, dynamic>.from(json['quotes'] as Map? ?? const {}),
         acceptanceRate = (json['acceptance_rate'] as num?)?.toDouble(),
         month = Map<String, dynamic>.from(json['month'] as Map? ?? const {}),
         deposits = Map<String, dynamic>.from(json['deposits'] as Map? ?? const {}),
@@ -76,6 +124,8 @@ class Dashboard {
         awaiting = (json['awaiting_answer'] as List? ?? const []).map((e) => Map<String, dynamic>.from(e as Map)).toList(),
         subscription = Map<String, dynamic>.from(json['subscription'] as Map? ?? const {});
 
+  /// Années proposées dans le filtre (du plus récent au plus ancien).
+  final List<int> years;
   final Map<String, dynamic> quotes;
   final double? acceptanceRate;
   final Map<String, dynamic> month;
@@ -93,8 +143,8 @@ class DashboardRepository {
 
   final ApiClient api;
 
-  Future<Dashboard> get() async {
-    final body = await api.get('/manager/dashboard');
+  Future<Dashboard> get({DashboardPeriod period = const DashboardPeriod()}) async {
+    final body = await api.get('/manager/dashboard', query: period.toQuery());
     return Dashboard.fromJson(Map<String, dynamic>.from(body['payload'] as Map));
   }
 }

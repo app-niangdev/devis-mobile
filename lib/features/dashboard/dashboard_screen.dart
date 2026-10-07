@@ -20,6 +20,8 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> with ReloadOnDataChange {
+  /// Période des chiffres affichés : le mois en cours par défaut.
+  DashboardPeriod _period = DashboardPeriod.currentMonth();
   late Future<Dashboard> _future = _load();
 
   // Retour sur l'application : les chiffres ont pu changer (autre appareil, devis expirés, nouveau mois)
@@ -37,7 +39,15 @@ class _DashboardScreenState extends State<DashboardScreen> with ReloadOnDataChan
     super.dispose();
   }
 
-  Future<Dashboard> _load() => context.read<DashboardRepository>().get();
+  Future<Dashboard> _load() => context.read<DashboardRepository>().get(period: _period);
+
+  void _setPeriod(DashboardPeriod period) {
+    if (period == _period) {
+      return;
+    }
+    _period = period;
+    _refresh();
+  }
 
   @override
   void onDataChanged() => _refresh();
@@ -68,16 +78,23 @@ class _DashboardScreenState extends State<DashboardScreen> with ReloadOnDataChan
           if (!snapshot.hasData) {
             return const LoadingView();
           }
+          // Changement de période : les chiffres précédents restent affichés pendant le chargement
+          final reloading = snapshot.connectionState == ConnectionState.waiting;
           final d = snapshot.data!;
           final daysLeft = d.subscription['days_left'] as int?;
+          // Tout l'historique : totaux par statut ; sinon devis acceptés pendant la période
+          final acceptedCount = _period.isAllTime ? d.count('accepted') : d.month['accepted_count'] as int? ?? 0;
+          final acceptedAmount = _period.isAllTime ? d.total('accepted') : d.month['accepted_amount'] as int? ?? 0;
 
           return RefreshIndicator(
             onRefresh: _refresh,
             child: ListView(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
               children: [
-                _Welcome(firstName: profile?.firstName ?? '', acceptedThisMonth: d.month['accepted_count'] as int? ?? 0),
-                const SizedBox(height: 16),
+                _Welcome(firstName: profile?.firstName ?? '', accepted: acceptedCount, periodLabel: _period.label),
+                const SizedBox(height: 12),
+                _PeriodFilter(period: _period, years: d.years, onChanged: _setPeriod),
+                SizedBox(height: 16, child: reloading ? const Center(child: LinearProgressIndicator(minHeight: 2)) : null),
                 if (d.subscription['state'] == 'expiring')
                   Container(
                     margin: const EdgeInsets.only(bottom: 16),
@@ -110,9 +127,9 @@ class _DashboardScreenState extends State<DashboardScreen> with ReloadOnDataChan
                   childAspectRatio: 1.55,
                   children: [
                     _Kpi(
-                      label: 'Acceptés ce mois',
-                      value: formatMoney(d.month['accepted_amount'] as int? ?? 0),
-                      hint: '${d.month['accepted_count'] ?? 0} devis',
+                      label: 'Devis acceptés',
+                      value: formatMoney(acceptedAmount),
+                      hint: '$acceptedCount devis ${_period.label}',
                       color: AppColors.success,
                       onTap: () => context.go('/quotes?status=accepted'),
                     ),
@@ -196,10 +213,13 @@ class _DashboardScreenState extends State<DashboardScreen> with ReloadOnDataChan
 
 /// Bandeau d'accueil anthracite (comme la barre latérale du web), chiffre clé en jaune.
 class _Welcome extends StatelessWidget {
-  const _Welcome({required this.firstName, required this.acceptedThisMonth});
+  const _Welcome({required this.firstName, required this.accepted, required this.periodLabel});
 
   final String firstName;
-  final int acceptedThisMonth;
+  final int accepted;
+
+  /// « en octobre 2026 », « le 07/10/2026 »…
+  final String periodLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -217,12 +237,105 @@ class _Welcome extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: const BoxDecoration(color: AppColors.highlight, borderRadius: AppRadius.pillAll),
             child: Text(
-              acceptedThisMonth == 0 ? 'Aucun devis accepté ce mois-ci' : '$acceptedThisMonth devis accepté${acceptedThisMonth > 1 ? 's' : ''} ce mois-ci',
+              accepted == 0 ? 'Aucun devis accepté $periodLabel' : '$accepted devis accepté${accepted > 1 ? 's' : ''} $periodLabel',
               style: const TextStyle(color: AppColors.highlightText, fontSize: 12, fontWeight: FontWeight.w700),
             ),
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Filtre de période : année (parmi celles qui ont des devis), mois, ou date précise.
+class _PeriodFilter extends StatelessWidget {
+  const _PeriodFilter({required this.period, required this.years, required this.onChanged});
+
+  final DashboardPeriod period;
+  final List<int> years;
+  final ValueChanged<DashboardPeriod> onChanged;
+
+  Future<void> _pickDate(BuildContext context) async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: period.date ?? now,
+      firstDate: DateTime(years.isEmpty ? now.year : years.last),
+      lastDate: now,
+      helpText: 'Choisir une date',
+    );
+    if (picked != null) {
+      onChanged(DashboardPeriod(date: picked));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // L'année affichée doit figurer dans la liste (ex. aucune donnée cette année)
+    final yearChoices = {...years, if (period.year != null) period.year!}.toList()..sort((a, b) => b.compareTo(a));
+
+    final dateButton = IconButton.outlined(
+      tooltip: 'Date précise',
+      onPressed: () => _pickDate(context),
+      style: IconButton.styleFrom(side: const BorderSide(color: AppColors.border), shape: const RoundedRectangleBorder(borderRadius: AppRadius.mdAll)),
+      icon: const Icon(Icons.calendar_month_outlined, color: AppColors.accent),
+    );
+
+    if (period.date != null) {
+      return Row(
+        children: [
+          Expanded(
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: InputChip(
+                avatar: const Icon(Icons.event, size: 18, color: AppColors.accentHover),
+                label: Text(period.label[0].toUpperCase() + period.label.substring(1)),
+                selected: true,
+                showCheckmark: false,
+                deleteButtonTooltipMessage: 'Revenir au mois en cours',
+                onDeleted: () => onChanged(DashboardPeriod.currentMonth()),
+                onPressed: () => _pickDate(context),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          dateButton,
+        ],
+      );
+    }
+
+    return Row(
+      children: [
+        Expanded(
+          child: DropdownButtonFormField<int?>(
+            value: period.year,
+            isExpanded: true,
+            decoration: const InputDecoration(labelText: 'Année', isDense: true),
+            items: [
+              const DropdownMenuItem(value: null, child: Text('Toutes')),
+              for (final year in yearChoices) DropdownMenuItem(value: year, child: Text('$year')),
+            ],
+            onChanged: (year) => onChanged(DashboardPeriod(year: year, month: year == null ? null : period.month)),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: DropdownButtonFormField<int?>(
+            value: period.month,
+            isExpanded: true,
+            decoration: const InputDecoration(labelText: 'Mois', isDense: true),
+            items: [
+              const DropdownMenuItem(value: null, child: Text('Tous')),
+              for (var m = 1; m <= 12; m++)
+                DropdownMenuItem(value: m, child: Text(monthNames[m - 1][0].toUpperCase() + monthNames[m - 1].substring(1))),
+            ],
+            // Un mois n'a de sens qu'avec une année
+            onChanged: period.year == null ? null : (month) => onChanged(DashboardPeriod(year: period.year, month: month)),
+          ),
+        ),
+        const SizedBox(width: 8),
+        dateButton,
+      ],
     );
   }
 }

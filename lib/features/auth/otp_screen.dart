@@ -76,11 +76,8 @@ class _OtpScreenState extends State<OtpScreen> {
       }
       if (next.needsPassword) {
         context.pushReplacement('/auth/password', extra: next);
-      } else if (next.isPendingApproval) {
-        // Inscription : le compte attend l'activation par l'administrateur
-        context.go('/auth/pending');
       }
-      // Numéro confirmé : connecté, le routeur ouvre l'accueil
+      // Numéro confirmé (dont inscription) : connecté, le routeur ouvre l'accueil
     } on ApiException catch (e) {
       setState(() {
         _error = e.message;

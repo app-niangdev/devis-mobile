@@ -9,7 +9,7 @@ import '../../core/widgets/common.dart';
 import 'auth_scaffold.dart';
 
 /// Inscription d'un artisan : son entreprise et son compte.
-/// Un code WhatsApp confirme le numéro, puis l'administrateur active le compte.
+/// Le code WhatsApp confirme le numéro, active le compte (période d'essai) et connecte l'artisan.
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
@@ -76,8 +76,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return AuthScaffold(
       showBack: true,
       title: 'Créer un compte',
-      subtitle: 'Inscrivez votre entreprise. Votre numéro sera confirmé par un code WhatsApp, '
-          'puis votre compte sera activé par l\'équipe SN Devis.',
+      subtitle: 'Inscrivez votre entreprise : un code WhatsApp confirmera votre numéro '
+          'et votre période d\'essai gratuite démarrera aussitôt.',
       child: Form(
         key: _formKey,
         child: AutofillGroup(

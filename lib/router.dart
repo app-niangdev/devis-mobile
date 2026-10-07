@@ -7,7 +7,6 @@ import 'core/widgets/sn_brand.dart';
 import 'features/auth/forgot_password_screen.dart';
 import 'features/auth/login_screen.dart';
 import 'features/auth/otp_screen.dart';
-import 'features/auth/pending_approval_screen.dart';
 import 'features/auth/register_screen.dart';
 import 'features/auth/set_password_screen.dart';
 import 'features/company/company_form_screen.dart';
@@ -58,7 +57,6 @@ GoRouter buildRouter(Session session) {
       GoRoute(path: '/auth/login', builder: (_, __) => const LoginScreen()),
       GoRoute(path: '/auth/forgot', builder: (_, __) => const ForgotPasswordScreen()),
       GoRoute(path: '/auth/register', builder: (_, __) => const RegisterScreen()),
-      GoRoute(path: '/auth/pending', builder: (_, __) => const PendingApprovalScreen()),
       GoRoute(path: '/auth/otp', builder: (_, state) => OtpScreen(step: state.extra! as AuthStep)),
       GoRoute(path: '/auth/password', builder: (_, state) => SetPasswordScreen(step: state.extra! as AuthStep)),
       StatefulShellRoute(

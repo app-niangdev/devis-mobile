@@ -9,8 +9,7 @@ import 'profile.dart';
 enum SessionStatus { loading, signedOut, signedIn }
 
 /// Étape renvoyée par les parcours de connexion et d'inscription :
-/// `authenticated`, `otp_required` (code WhatsApp), `set_password`
-/// ou `pending_approval` (inscription en attente de l'administrateur).
+/// `authenticated`, `otp_required` (code WhatsApp) ou `set_password`.
 class AuthStep {
   AuthStep.fromJson(Map<String, dynamic> json)
       : step = json['step'] as String? ?? '',
@@ -34,7 +33,6 @@ class AuthStep {
   bool get isAuthenticated => step == 'authenticated';
   bool get needsOtp => step == 'otp_required';
   bool get needsPassword => step == 'set_password';
-  bool get isPendingApproval => step == 'pending_approval';
 }
 
 /// Session du gestionnaire : jetons, profil et charte de son entreprise.
@@ -94,7 +92,7 @@ class Session extends ChangeNotifier {
     return _handleStep(body);
   }
 
-  /// Inscription depuis l'application : un code WhatsApp confirme ensuite le numéro.
+  /// Inscription depuis l'application : le code WhatsApp confirme le numéro et ouvre la session.
   Future<AuthStep> register({
     required String firstName,
     required String lastName,
